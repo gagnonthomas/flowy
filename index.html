@@ -511,7 +511,11 @@
 
     /* Sensory modes grid */
     .nd-sensory {
-      margin-bottom: 48px;
+      margin-bottom: 56px;
+    }
+
+    .nd-section-header {
+      margin-bottom: 24px;
     }
 
     .nd-sensory-title {
@@ -520,7 +524,14 @@
       letter-spacing: 1.5px;
       text-transform: uppercase;
       color: rgba(255,255,255,.35);
-      margin-bottom: 20px;
+      margin-bottom: 8px;
+    }
+
+    .nd-section-lead {
+      font-size: 15px;
+      color: rgba(255,255,255,.65);
+      line-height: 1.6;
+      max-width: 640px;
     }
 
     .nd-sensory-grid {
@@ -564,6 +575,144 @@
       font-size: 12px;
       color: rgba(255,255,255,.5);
       line-height: 1.6;
+    }
+
+    /* ── Le temps visible ── */
+    .nd-time {
+      margin-bottom: 56px;
+    }
+
+    .nd-time-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      align-items: stretch;
+    }
+
+    /* Left: intro card */
+    .nd-time-intro {
+      background: linear-gradient(135deg, rgba(124,111,205,.25), rgba(236,72,153,.15));
+      border: 1px solid rgba(124,111,205,.35);
+      border-radius: 20px;
+      padding: 32px 28px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      text-align: left;
+    }
+
+    .nd-time-intro-icon {
+      font-size: 36px;
+      margin-bottom: 16px;
+      line-height: 1;
+    }
+
+    .nd-time-intro h3 {
+      font-size: 20px;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 12px;
+      line-height: 1.25;
+    }
+
+    .nd-time-intro h3 em {
+      font-style: normal;
+      background: linear-gradient(90deg, #c084fc, #f472b6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .nd-time-intro p {
+      font-size: 13.5px;
+      color: rgba(255,255,255,.6);
+      line-height: 1.65;
+    }
+
+    /* Right: 3 smaller cards stacked */
+    .nd-time-cards {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .nd-time-card {
+      background: rgba(255,255,255,.05);
+      border: 1px solid rgba(255,255,255,.09);
+      border-radius: 16px;
+      padding: 18px 20px;
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      text-align: left;
+      transition: background .2s;
+    }
+
+    .nd-time-card:hover {
+      background: rgba(255,255,255,.09);
+    }
+
+    .nd-time-card-icon {
+      font-size: 22px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .nd-time-card-name {
+      font-size: 14px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 4px;
+    }
+
+    .nd-time-card-text {
+      font-size: 12px;
+      color: rgba(255,255,255,.5);
+      line-height: 1.55;
+    }
+
+    /* Visual timer bar */
+    .nd-timer-visual {
+      margin-top: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .nd-timer-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .nd-timer-label {
+      font-size: 10px;
+      color: rgba(255,255,255,.4);
+      font-weight: 600;
+      width: 48px;
+      flex-shrink: 0;
+      text-align: right;
+    }
+
+    .nd-timer-track {
+      flex: 1;
+      height: 6px;
+      background: rgba(255,255,255,.1);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    .nd-timer-fill {
+      height: 100%;
+      border-radius: 6px;
+    }
+
+    .nd-timer-pct {
+      font-size: 10px;
+      color: rgba(255,255,255,.4);
+      font-weight: 600;
+      width: 28px;
+      text-align: left;
     }
 
     /* Bottom stat bar */
@@ -1080,33 +1229,114 @@
 
       <!-- Sensory modes -->
       <div class="nd-sensory">
-        <div class="nd-sensory-title">Modes de traitement sensoriel</div>
+        <div class="nd-section-header">
+          <div class="nd-sensory-title">Design sensoriel</div>
+          <p class="nd-section-lead">Chaque choix visuel est pensé pour ne pas déclencher de surcharge sensorielle — animations douces, contrastes réglables, pas d'éléments intrusifs. L'interface s'adapte à vous, pas l'inverse.</p>
+        </div>
         <div class="nd-sensory-grid">
 
           <div class="nd-sensory-card">
             <span class="nd-sensory-icon" style="background:linear-gradient(135deg,#fbbf24,#f59e0b)">☀️</span>
             <div class="nd-sensory-name">Lumière</div>
-            <p class="nd-sensory-text">Mode sombre, thème à faible contraste et réduction de la luminosité des couleurs pour les personnes hypersensibles à la lumière vive.</p>
+            <p class="nd-sensory-text">Mode sombre, thème à faible contraste et palette douce. Aucune couleur vive imposée — chaque teinte peut être atténuée pour les personnes hypersensibles à la lumière.</p>
           </div>
 
           <div class="nd-sensory-card">
             <span class="nd-sensory-icon" style="background:linear-gradient(135deg,#60a5fa,#3b82f6)">🌊</span>
             <div class="nd-sensory-name">Mouvement</div>
-            <p class="nd-sensory-text">Option "Réduire les animations" pour désactiver les transitions, les effets de rebond et les animations qui peuvent provoquer une surcharge ou de l'inconfort.</p>
+            <p class="nd-sensory-text">"Réduire les animations" désactive transitions, rebonds et effets de parallaxe. Aucun clignotement, aucun élément qui bouge sans raison — zéro perturbation non voulue.</p>
           </div>
 
           <div class="nd-sensory-card">
             <span class="nd-sensory-icon" style="background:linear-gradient(135deg,#a78bfa,#8b5cf6)">🔊</span>
             <div class="nd-sensory-name">Son</div>
-            <p class="nd-sensory-text">Notifications visuelles et haptiques (vibration) en remplacement du son. Alertes douces ou percutantes selon votre profil sensoriel.</p>
+            <p class="nd-sensory-text">Chaque alerte existe en version visuelle et haptique (vibration douce ou forte). Vous choisissez : son, silence total, ou vibration — selon le contexte et votre seuil sensoriel.</p>
           </div>
 
           <div class="nd-sensory-card">
             <span class="nd-sensory-icon" style="background:linear-gradient(135deg,#34d399,#10b981)">👁️</span>
             <div class="nd-sensory-name">Visuel</div>
-            <p class="nd-sensory-text">Interface épurée ("Focus Mode") qui masque tout sauf la tâche en cours. Couleurs douces, densité d'information ajustable, et police dyslexie disponible.</p>
+            <p class="nd-sensory-text">Focus Mode masque tout sauf la tâche active. Densité d'information ajustable, police dyslexie, espacement augmenté — une interface qui ne crie pas.</p>
           </div>
 
+        </div>
+      </div>
+
+      <!-- Le temps rendu visible -->
+      <div class="nd-time">
+        <div class="nd-section-header">
+          <div class="nd-sensory-title">Le temps rendu visible</div>
+          <p class="nd-section-lead">Pour les cerveaux autistes, TDAH, ou avec des difficultés des fonctions exécutives, le temps peut sembler insaisissable. Les minuteries visuelles, les widgets et les timelines le rendent <strong style="color:rgba(255,255,255,.85)">concret, tangible et prévisible</strong>.</p>
+        </div>
+        <div class="nd-time-layout">
+
+          <div class="nd-time-intro">
+            <div class="nd-time-intro-icon">🕰️</div>
+            <h3>Le temps <em>abstrait</em><br>devient visible</h3>
+            <p>
+              Savoir qu'il reste "2 heures" ne suffit pas — votre cerveau a besoin de
+              <em style="color:rgba(255,255,255,.8);font-style:normal">voir</em> ce temps se consumer.
+              Chaque outil ci-contre transforme la durée en quelque chose que vous pouvez suivre,
+              anticiper, et traverser sans anxiété.
+            </p>
+            <div class="nd-timer-visual" style="margin-top:20px">
+              <div class="nd-timer-row">
+                <span class="nd-timer-label">Yoga</span>
+                <div class="nd-timer-track"><div class="nd-timer-fill" style="width:72%;background:linear-gradient(90deg,#c084fc,#f472b6)"></div></div>
+                <span class="nd-timer-pct">72 %</span>
+              </div>
+              <div class="nd-timer-row">
+                <span class="nd-timer-label">Rapport</span>
+                <div class="nd-timer-track"><div class="nd-timer-fill" style="width:40%;background:linear-gradient(90deg,#60a5fa,#7c6fcd)"></div></div>
+                <span class="nd-timer-pct">40 %</span>
+              </div>
+              <div class="nd-timer-row">
+                <span class="nd-timer-label">Lecture</span>
+                <div class="nd-timer-track"><div class="nd-timer-fill" style="width:15%;background:linear-gradient(90deg,#34d399,#10b981)"></div></div>
+                <span class="nd-timer-pct">15 %</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="nd-time-cards">
+
+            <div class="nd-time-card">
+              <span class="nd-time-card-icon">⏱️</span>
+              <div>
+                <div class="nd-time-card-name">Minuteries visuelles</div>
+                <p class="nd-time-card-text">
+                  Une barre qui se vide, un cercle qui se réduit — le Focus Timer rend le temps
+                  perceptible à l'œil. Les transitions entre tâches deviennent des moments
+                  prévisibles, pas des ruptures.
+                </p>
+              </div>
+            </div>
+
+            <div class="nd-time-card">
+              <span class="nd-time-card-icon">📊</span>
+              <div>
+                <div class="nd-time-card-name">Progression de la journée</div>
+                <p class="nd-time-card-text">
+                  Les barres de progression sur la Timeline montrent exactement où vous en êtes
+                  dans votre journée. Voir l'avancement aide à gérer les transitions et à
+                  maintenir l'élan sans se perdre.
+                </p>
+              </div>
+            </div>
+
+            <div class="nd-time-card">
+              <span class="nd-time-card-icon">🔲</span>
+              <div>
+                <div class="nd-time-card-name">Widgets & Dynamic Island</div>
+                <p class="nd-time-card-text">
+                  La tâche en cours s'affiche en permanence sur l'écran d'accueil et dans
+                  la Dynamic Island. Plus besoin d'ouvrir l'app — un coup d'œil suffit
+                  pour savoir quoi faire maintenant.
+                </p>
+              </div>
+            </div>
+
+          </div>
         </div>
       </div>
 
