@@ -389,6 +389,119 @@
       grid-column: span 2;
     }
 
+    /* Full-width card */
+    .card-full {
+      grid-column: 1 / -1;
+    }
+
+    /* PRO badge */
+    .pro-tag {
+      display: inline-block;
+      background: linear-gradient(90deg, #f59e0b, #f97316);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .8px;
+      padding: 2px 8px;
+      border-radius: 20px;
+      margin-bottom: 10px;
+    }
+
+    /* NEW badge */
+    .new-tag {
+      display: inline-block;
+      background: #ecfdf5;
+      color: #059669;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .5px;
+      padding: 2px 8px;
+      border-radius: 20px;
+      margin-bottom: 10px;
+    }
+
+    /* Second section – slightly different bg */
+    .features-section-2 {
+      background: #fff;
+    }
+
+    /* Card accent colours – section 2 */
+    .card-timeline::before  { background: #7c6fcd; }
+    .card-inbox::before     { background: #64748b; }
+    .card-subtasks::before  { background: #e8775a; }
+    .card-recur::before     { background: #f59e0b; }
+    .card-ai::before        { background: #6366f1; }
+    .card-replan::before    { background: #14b8a6; }
+    .card-sync::before      { background: #5aace8; }
+    .card-energy::before    { background: #f97316; }
+    .card-cycle::before     { background: #ec4899; }
+    .card-focus::before     { background: #8b5cf6; }
+    .card-perso::before     { background: #a78bfa; }
+    .card-multi::before     { background: #0ea5e9; }
+    .card-access::before    { background: #10b981; }
+    .card-notifpro::before  { background: #ef4444; }
+    .card-widget::before    { background: #1a1a2e; }
+
+    /* Timeline mockup inside card */
+    .timeline-mockup {
+      margin-top: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .tl-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .tl-time {
+      font-size: 11px;
+      color: #aaa;
+      font-weight: 600;
+      width: 36px;
+      flex-shrink: 0;
+      text-align: right;
+    }
+
+    .tl-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .tl-block {
+      flex: 1;
+      border-radius: 8px;
+      padding: 6px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .tl-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .tl-bar-wrap {
+      width: 60px;
+      height: 4px;
+      background: rgba(255,255,255,.3);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .tl-bar-fill {
+      height: 100%;
+      border-radius: 4px;
+      background: rgba(255,255,255,.85);
+    }
+
     /* ═══════════════════════════════════════
        FOOTER STRIP
     ═══════════════════════════════════════ */
@@ -668,6 +781,209 @@
           <strong>Suggest</strong> pour démarrer une note à partir d'un sujet,
           <strong>Categorize</strong> pour organiser automatiquement une note existante.
           Propose aussi des modèles : recettes, voyages, réunions, et plus.
+        </p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ─── FEATURES SECTION 2 ─── -->
+  <div class="features-section features-section-2">
+    <p class="section-eyebrow">Le moteur sous le capot</p>
+    <h2 class="section-title">Puissant, intelligent & humain</h2>
+    <p class="section-sub">Des fonctionnalités de pointe conçues autour de votre bien-être et de votre rythme de vie.</p>
+
+    <div class="cards-grid">
+
+      <!-- Timeline visuelle – full width -->
+      <div class="card card-timeline card-full">
+        <span class="card-emoji">⏱️</span>
+        <div class="card-title">Timeline visuelle — le cœur de l'app</div>
+        <p class="card-desc">
+          La vue centrale : créez des tâches en un instant, réorganisez-les par <strong>drag &amp; drop</strong>,
+          ajoutez des tâches récurrentes, des notes et des sous-tâches. Tout s'affiche en blocs séquentiels
+          avec des <strong>barres de progression</strong> pour visualiser l'avancement de votre journée.
+        </p>
+        <div class="timeline-mockup">
+          <div class="tl-row">
+            <span class="tl-time">9h</span>
+            <div class="tl-dot" style="background:#7c6fcd"></div>
+            <div class="tl-block" style="background:#7c6fcd">
+              <span class="tl-label">☕ Routine matinale</span>
+              <div class="tl-bar-wrap"><div class="tl-bar-fill" style="width:100%"></div></div>
+            </div>
+          </div>
+          <div class="tl-row">
+            <span class="tl-time">10h</span>
+            <div class="tl-dot" style="background:#5aace8"></div>
+            <div class="tl-block" style="background:#5aace8">
+              <span class="tl-label">📊 Rapport mensuel</span>
+              <div class="tl-bar-wrap"><div class="tl-bar-fill" style="width:60%"></div></div>
+            </div>
+          </div>
+          <div class="tl-row">
+            <span class="tl-time">12h</span>
+            <div class="tl-dot" style="background:#5ac88a"></div>
+            <div class="tl-block" style="background:#5ac88a">
+              <span class="tl-label">🥗 Pause déjeuner</span>
+              <div class="tl-bar-wrap"><div class="tl-bar-fill" style="width:0%"></div></div>
+            </div>
+          </div>
+          <div class="tl-row">
+            <span class="tl-time">18h</span>
+            <div class="tl-dot" style="background:#e8775a"></div>
+            <div class="tl-block" style="background:#e8775a">
+              <span class="tl-label">🧘 Yoga</span>
+              <div class="tl-bar-wrap"><div class="tl-bar-fill" style="width:0%"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Inbox -->
+      <div class="card card-inbox">
+        <span class="card-emoji">📥</span>
+        <div class="card-title">Inbox</div>
+        <p class="card-desc">
+          Capturez des idées instantanément dans l'Inbox et triez-les plus tard,
+          sans perturber le planning en cours.
+        </p>
+      </div>
+
+      <!-- Tâches & Sous-tâches -->
+      <div class="card card-subtasks">
+        <span class="card-emoji">✅</span>
+        <div class="card-title">Tâches & Sous-tâches</div>
+        <p class="card-desc">
+          Décomposez les grands objectifs en étapes plus petites avec des notes et des sous-tâches.
+          Chaque tâche est personnalisable avec une couleur et une icône parmi des centaines disponibles.
+        </p>
+      </div>
+
+      <!-- Récurrentes & Routines -->
+      <div class="card card-recur">
+        <span class="card-emoji">🔁</span>
+        <div class="pro-tag">PRO</div>
+        <div class="card-title">Tâches récurrentes & Routines</div>
+        <p class="card-desc">
+          Créez des tâches récurrentes et des routines qui s'ancrent vraiment dans le quotidien.
+        </p>
+      </div>
+
+      <!-- Structured AI – wide -->
+      <div class="card card-ai card-wide">
+        <span class="card-emoji">🤖</span>
+        <div class="pro-tag">PRO · GPT-4o</div>
+        <div class="card-title">Structured AI</div>
+        <p class="card-desc">
+          Introduite en juin 2024, une IA complètement repensée propulsée par GPT-4o. Elle va au-delà
+          de la simple création de tâches : elle peut <strong>planifier des voyages</strong>,
+          recommander des recettes, et même <strong>scanner des calendriers physiques</strong> pour
+          les intégrer dans votre timeline. En 2025, elle peut aussi <strong>réorganiser automatiquement
+          votre journée</strong> si vos plans changent (réveil tardif, journée de vacances…).
+        </p>
+      </div>
+
+      <!-- Replan -->
+      <div class="card card-replan">
+        <span class="card-emoji">⚡</span>
+        <div class="pro-tag">PRO</div>
+        <div class="card-title">Replan</div>
+        <p class="card-desc">
+          Replanifie automatiquement les tâches manquées ou oubliées pour les replacer
+          intelligemment dans votre planning.
+        </p>
+      </div>
+
+      <!-- Synchro Calendrier -->
+      <div class="card card-sync">
+        <span class="card-emoji">📅</span>
+        <div class="pro-tag">PRO</div>
+        <div class="card-title">Synchronisation Calendrier & Rappels</div>
+        <p class="card-desc">
+          Synchronisation transparente avec Calendrier, Rappels et listes de tâches.
+        </p>
+      </div>
+
+      <!-- Energy Monitor -->
+      <div class="card card-energy">
+        <span class="card-emoji">🔋</span>
+        <div class="new-tag">RECHERCHE · BREINSTRAAT</div>
+        <div class="card-title">Energy Monitor</div>
+        <p class="card-desc">
+          Développé avec des chercheurs et médecins de l'institut néerlandais Breinstraat,
+          l'Energy Monitor vous aide à surveiller votre énergie disponible au fil de la journée,
+          pour planifier les tâches selon vos niveaux d'énergie réels sans vous épuiser.
+        </p>
+      </div>
+
+      <!-- Cycle Seasons -->
+      <div class="card card-cycle">
+        <span class="card-emoji">🌸</span>
+        <div class="new-tag">PIONNIER</div>
+        <div class="card-title">Cycle Seasons</div>
+        <p class="card-desc">
+          Une fonctionnalité pionnière pour les personnes qui ont un cycle menstruel, permettant
+          d'aligner leur planning avec les phases du cycle et d'en tirer avantage.
+        </p>
+      </div>
+
+      <!-- Focus Timer -->
+      <div class="card card-focus">
+        <span class="card-emoji">⏱️</span>
+        <div class="card-title">Focus Timer (Pomodoro)</div>
+        <p class="card-desc">
+          Restez concentrée avec un minuteur Focus dédié, des Live Activities et des widgets interactifs.
+        </p>
+      </div>
+
+      <!-- Personnalisation -->
+      <div class="card card-perso">
+        <span class="card-emoji">🎨</span>
+        <div class="card-title">Personnalisation</div>
+        <p class="card-desc">
+          Personnalisez l'app avec des couleurs de tâches, une large gamme d'icônes,
+          et des couleurs d'application pour correspondre à vos goûts.
+        </p>
+      </div>
+
+      <!-- Multi-plateforme – wide -->
+      <div class="card card-multi card-wide">
+        <span class="card-emoji">📱</span>
+        <div class="card-title">Multi-plateforme & Sync Cloud</div>
+        <p class="card-desc">
+          Fonctionne sur <strong>iPhone, iPad, Mac, Apple Watch et Android</strong> via Structured Cloud.
+          Une version web a été lancée en août 2024 — accédez à votre planning depuis n'importe quel navigateur.
+        </p>
+      </div>
+
+      <!-- Accessibilité -->
+      <div class="card card-access">
+        <span class="card-emoji">♿</span>
+        <div class="card-title">Accessibilité</div>
+        <p class="card-desc">
+          VoiceOver, Voice Control, police adaptée à la dyslexie,
+          et support de plus de <strong>30 langues</strong>.
+        </p>
+      </div>
+
+      <!-- Notifications Pro -->
+      <div class="card card-notifpro">
+        <span class="card-emoji">🔔</span>
+        <div class="pro-tag">PRO</div>
+        <div class="card-title">Notifications personnalisables</div>
+        <p class="card-desc">
+          Alertes ajustables pour chaque type de tâche ou événement.
+        </p>
+      </div>
+
+      <!-- Widgets & Apple Watch -->
+      <div class="card card-widget">
+        <span class="card-emoji">🔲</span>
+        <div class="card-title">Widgets & Apple Watch</div>
+        <p class="card-desc">
+          Widgets d'écran d'accueil pour voir la tâche en cours d'un coup d'œil,
+          et Live Activities sur Dynamic Island.
         </p>
       </div>
 
