@@ -9,11 +9,19 @@
 
     body {
       font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #f8f5ff;
+      color: #2d2d2d;
+    }
+
+    /* ═══════════════════════════════════════
+       HERO
+    ═══════════════════════════════════════ */
+    .hero-wrap {
       background: linear-gradient(135deg, #f5f0ff 0%, #ffe8f0 50%, #fff5e0 100%);
-      min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
+      padding: 56px 32px;
     }
 
     .hero {
@@ -21,12 +29,11 @@
       align-items: center;
       justify-content: center;
       gap: 48px;
-      padding: 48px 32px;
       max-width: 1100px;
       width: 100%;
     }
 
-    /* ── Left feature list ── */
+    /* Left feature list */
     .features {
       display: flex;
       flex-direction: column;
@@ -37,7 +44,6 @@
       display: flex;
       align-items: center;
       gap: 14px;
-      cursor: default;
     }
 
     .feature-icon {
@@ -63,7 +69,7 @@
       color: #333;
     }
 
-    /* ── Centre – planner mockup ── */
+    /* Centre mockup */
     .center {
       display: flex;
       flex-direction: column;
@@ -78,11 +84,8 @@
       letter-spacing: -1px;
     }
 
-    .app-title span {
-      color: #7c6fcd;
-    }
+    .app-title span { color: #7c6fcd; }
 
-    /* Planner book */
     .book-wrapper {
       position: relative;
       width: 340px;
@@ -97,7 +100,6 @@
       display: flex;
     }
 
-    /* Left page */
     .page-left {
       width: 50%;
       height: 100%;
@@ -118,7 +120,6 @@
       position: relative;
     }
 
-    /* Spine shadow */
     .book::after {
       content: '';
       position: absolute;
@@ -131,7 +132,6 @@
       z-index: 2;
     }
 
-    /* Flip corner */
     .flip-corner {
       position: absolute;
       bottom: 0;
@@ -156,7 +156,6 @@
       font-weight: 700;
     }
 
-    /* Month header on left page */
     .month-header {
       font-size: 13px;
       font-weight: 700;
@@ -166,7 +165,6 @@
       margin-bottom: 12px;
     }
 
-    /* Mini calendar grid */
     .mini-cal {
       display: grid;
       grid-template-columns: repeat(7, 1fr);
@@ -174,32 +172,11 @@
       font-size: 9px;
     }
 
-    .mini-cal .day-name {
-      text-align: center;
-      color: #999;
-      font-weight: 600;
-    }
+    .mini-cal .day-name { text-align: center; color: #999; font-weight: 600; }
+    .mini-cal .day { text-align: center; padding: 3px 0; border-radius: 4px; color: #444; }
+    .mini-cal .day.today { background: #7c6fcd; color: #fff; font-weight: 700; }
+    .mini-cal .day.event { background: #ffe8f0; color: #e8775a; font-weight: 600; }
 
-    .mini-cal .day {
-      text-align: center;
-      padding: 3px 0;
-      border-radius: 4px;
-      color: #444;
-    }
-
-    .mini-cal .day.today {
-      background: #7c6fcd;
-      color: #fff;
-      font-weight: 700;
-    }
-
-    .mini-cal .day.event {
-      background: #ffe8f0;
-      color: #e8775a;
-      font-weight: 600;
-    }
-
-    /* Right page – task list */
     .tasks-title {
       font-size: 12px;
       font-weight: 700;
@@ -209,37 +186,20 @@
       margin-bottom: 10px;
     }
 
-    .task-item {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 10px;
-    }
+    .task-item { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
 
     .task-check {
-      width: 14px;
-      height: 14px;
+      width: 14px; height: 14px;
       border-radius: 50%;
       border: 2px solid #ccc;
       flex-shrink: 0;
     }
 
-    .task-check.done {
-      background: #5ac88a;
-      border-color: #5ac88a;
-    }
+    .task-check.done { background: #5ac88a; border-color: #5ac88a; }
 
-    .task-text {
-      font-size: 10px;
-      color: #555;
-    }
+    .task-text { font-size: 10px; color: #555; }
+    .task-text.done-text { text-decoration: line-through; color: #aaa; }
 
-    .task-text.done-text {
-      text-decoration: line-through;
-      color: #aaa;
-    }
-
-    /* Reminder chip */
     .reminder-chip {
       display: inline-flex;
       align-items: center;
@@ -253,35 +213,13 @@
       margin-top: 14px;
     }
 
-    /* Note lines */
-    .note-lines {
-      margin-top: 14px;
-    }
+    .note-lines { margin-top: 14px; }
+    .note-line { height: 1px; background: #f0eeff; margin-bottom: 8px; }
+    .note-text { font-size: 9px; color: #bbb; font-style: italic; }
 
-    .note-line {
-      height: 1px;
-      background: #f0eeff;
-      margin-bottom: 8px;
-    }
+    .subtitle { font-size: 15px; color: #888; font-weight: 500; }
+    .subtitle strong { color: #7c6fcd; }
 
-    .note-text {
-      font-size: 9px;
-      color: #bbb;
-      font-style: italic;
-    }
-
-    .subtitle {
-      font-size: 15px;
-      color: #888;
-      font-weight: 500;
-      letter-spacing: .3px;
-    }
-
-    .subtitle strong {
-      color: #7c6fcd;
-    }
-
-    /* Floating badge */
     .badge {
       position: absolute;
       top: -14px;
@@ -296,7 +234,7 @@
       white-space: nowrap;
     }
 
-    /* ── Right side – testimonial / feature pills ── */
+    /* Right pills */
     .right-panel {
       display: flex;
       flex-direction: column;
@@ -314,159 +252,432 @@
       gap: 12px;
     }
 
-    .pill-icon {
-      font-size: 26px;
+    .pill-icon { font-size: 26px; }
+    .pill-info strong { display: block; font-size: 13px; color: #2d2d2d; }
+    .pill-info span { font-size: 11px; color: #999; }
+
+
+    /* ═══════════════════════════════════════
+       FEATURES SECTION
+    ═══════════════════════════════════════ */
+    .features-section {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 72px 32px 80px;
     }
 
-    .pill-info strong {
-      display: block;
+    .section-eyebrow {
+      text-align: center;
       font-size: 13px;
-      color: #2d2d2d;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #7c6fcd;
+      margin-bottom: 10px;
     }
 
-    .pill-info span {
-      font-size: 11px;
-      color: #999;
+    .section-title {
+      text-align: center;
+      font-size: 32px;
+      font-weight: 800;
+      color: #1a1a2e;
+      margin-bottom: 8px;
+      letter-spacing: -.5px;
     }
+
+    .section-sub {
+      text-align: center;
+      font-size: 15px;
+      color: #888;
+      margin-bottom: 52px;
+    }
+
+    /* Feature cards grid */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 20px;
+      padding: 28px 26px;
+      box-shadow: 0 4px 20px rgba(100,80,200,.07);
+      border: 1.5px solid #f0ecff;
+      transition: transform .2s ease, box-shadow .2s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 32px rgba(100,80,200,.13);
+    }
+
+    /* Subtle gradient accent top-right */
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0; right: 0;
+      width: 80px; height: 80px;
+      border-radius: 0 20px 0 80px;
+      opacity: .06;
+    }
+
+    /* Per-card accent colours */
+    .card-brief::before   { background: #f59e0b; }
+    .card-feed::before    { background: #7c6fcd; }
+    .card-notif::before   { background: #ef4444; }
+    .card-tasks::before   { background: #e8775a; }
+    .card-habits::before  { background: #10b981; }
+    .card-share::before   { background: #5aace8; }
+    .card-collab::before  { background: #a78bfa; }
+    .card-grocery::before { background: #f97316; }
+    .card-voice::before   { background: #8b5cf6; }
+    .card-photo::before   { background: #0ea5e9; }
+    .card-notes::before   { background: #5ac88a; }
+
+    .card-emoji {
+      font-size: 32px;
+      margin-bottom: 14px;
+      display: block;
+      line-height: 1;
+    }
+
+    .card-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #1a1a2e;
+      margin-bottom: 8px;
+    }
+
+    .card-desc {
+      font-size: 13.5px;
+      color: #666;
+      line-height: 1.6;
+    }
+
+    /* "AI" badge on relevant cards */
+    .ai-tag {
+      display: inline-block;
+      background: linear-gradient(90deg, #7c6fcd, #a78bfa);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .8px;
+      padding: 2px 8px;
+      border-radius: 20px;
+      margin-bottom: 10px;
+    }
+
+    /* TDAH badge */
+    .tdah-tag {
+      display: inline-block;
+      background: #fff0f0;
+      color: #ef4444;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .5px;
+      padding: 2px 8px;
+      border-radius: 20px;
+      margin-bottom: 10px;
+    }
+
+    /* Wide card (spans 2 cols) */
+    .card-wide {
+      grid-column: span 2;
+    }
+
+    /* ═══════════════════════════════════════
+       FOOTER STRIP
+    ═══════════════════════════════════════ */
+    .footer-strip {
+      background: linear-gradient(90deg, #7c6fcd, #a78bfa);
+      color: #fff;
+      text-align: center;
+      padding: 28px 32px;
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: .2px;
+    }
+
+    .footer-strip span { opacity: .75; font-weight: 400; }
   </style>
 </head>
 <body>
-  <div class="hero">
 
-    <!-- Left: feature list -->
-    <div class="features">
-      <div class="feature-item">
-        <div class="feature-icon icon-calendar">📅</div>
-        <span class="feature-label">Calendrier</span>
+  <!-- ─── HERO ─── -->
+  <div class="hero-wrap">
+    <div class="hero">
+
+      <!-- Left: feature icons -->
+      <div class="features">
+        <div class="feature-item">
+          <div class="feature-icon icon-calendar">📅</div>
+          <span class="feature-label">Calendrier</span>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon icon-tasks">✅</div>
+          <span class="feature-label">Tâches</span>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon icon-reminders">🔔</div>
+          <span class="feature-label">Rappels</span>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon icon-notes">📝</div>
+          <span class="feature-label">Notes</span>
+        </div>
       </div>
-      <div class="feature-item">
-        <div class="feature-icon icon-tasks">✅</div>
-        <span class="feature-label">Tâches</span>
-      </div>
-      <div class="feature-item">
-        <div class="feature-icon icon-reminders">🔔</div>
-        <span class="feature-label">Rappels</span>
-      </div>
-      <div class="feature-item">
-        <div class="feature-icon icon-notes">📝</div>
-        <span class="feature-label">Notes</span>
-      </div>
-    </div>
 
-    <!-- Centre: mockup -->
-    <div class="center">
-      <div class="app-title">All in <span>1</span></div>
+      <!-- Centre: planner mockup -->
+      <div class="center">
+        <div class="app-title">All in <span>1</span></div>
 
-      <div class="book-wrapper">
-        <div class="badge">📖 Tourne les pages !</div>
-        <div class="book">
+        <div class="book-wrapper">
+          <div class="badge">📖 Tourne les pages !</div>
+          <div class="book">
 
-          <!-- Left page: mini calendar -->
-          <div class="page-left">
-            <div class="month-header">Mars 2026</div>
-            <div class="mini-cal">
-              <span class="day-name">L</span><span class="day-name">M</span>
-              <span class="day-name">M</span><span class="day-name">J</span>
-              <span class="day-name">V</span><span class="day-name">S</span>
-              <span class="day-name">D</span>
+            <div class="page-left">
+              <div class="month-header">Mars 2026</div>
+              <div class="mini-cal">
+                <span class="day-name">L</span><span class="day-name">M</span>
+                <span class="day-name">M</span><span class="day-name">J</span>
+                <span class="day-name">V</span><span class="day-name">S</span>
+                <span class="day-name">D</span>
 
-              <span class="day"></span><span class="day"></span>
-              <span class="day"></span><span class="day"></span>
-              <span class="day">1</span><span class="day">2</span><span class="day">3</span>
+                <span class="day"></span><span class="day"></span>
+                <span class="day"></span><span class="day"></span>
+                <span class="day">1</span><span class="day">2</span><span class="day">3</span>
 
-              <span class="day">4</span><span class="day today">5</span>
-              <span class="day">6</span><span class="day">7</span>
-              <span class="day event">8</span><span class="day">9</span><span class="day">10</span>
+                <span class="day">4</span><span class="day today">5</span>
+                <span class="day">6</span><span class="day">7</span>
+                <span class="day event">8</span><span class="day">9</span><span class="day">10</span>
 
-              <span class="day">11</span><span class="day">12</span>
-              <span class="day">13</span><span class="day">14</span>
-              <span class="day">15</span><span class="day">16</span><span class="day">17</span>
+                <span class="day">11</span><span class="day">12</span>
+                <span class="day">13</span><span class="day">14</span>
+                <span class="day">15</span><span class="day">16</span><span class="day">17</span>
 
-              <span class="day">18</span><span class="day">19</span>
-              <span class="day">20</span><span class="day">21</span>
-              <span class="day">22</span><span class="day">23</span><span class="day">24</span>
+                <span class="day">18</span><span class="day">19</span>
+                <span class="day">20</span><span class="day">21</span>
+                <span class="day">22</span><span class="day">23</span><span class="day">24</span>
 
-              <span class="day">25</span><span class="day">26</span>
-              <span class="day">27</span><span class="day">28</span>
-              <span class="day">29</span><span class="day">30</span><span class="day">31</span>
+                <span class="day">25</span><span class="day">26</span>
+                <span class="day">27</span><span class="day">28</span>
+                <span class="day">29</span><span class="day">30</span><span class="day">31</span>
+              </div>
+              <div class="note-lines" style="margin-top:18px">
+                <div class="note-line"></div>
+                <div class="note-text">Rendez-vous médecin 8 mars</div>
+                <div class="note-line" style="margin-top:8px"></div>
+                <div class="note-line"></div>
+                <div class="note-line"></div>
+              </div>
             </div>
 
-            <!-- Note lines -->
-            <div class="note-lines" style="margin-top:18px">
-              <div class="note-line"></div>
-              <div class="note-text">Rendez-vous médecin 8 mars</div>
-              <div class="note-line" style="margin-top:8px"></div>
-              <div class="note-line"></div>
-              <div class="note-line"></div>
+            <div class="page-right">
+              <div class="tasks-title">Tâches du jour</div>
+              <div class="task-item">
+                <div class="task-check done"></div>
+                <span class="task-text done-text">Épicerie</span>
+              </div>
+              <div class="task-item">
+                <div class="task-check done"></div>
+                <span class="task-text done-text">Appeler Marie</span>
+              </div>
+              <div class="task-item">
+                <div class="task-check"></div>
+                <span class="task-text">Rapport mensuel</span>
+              </div>
+              <div class="task-item">
+                <div class="task-check"></div>
+                <span class="task-text">Yoga 18h</span>
+              </div>
+              <div class="reminder-chip">🔔 Yoga dans 2h</div>
+              <div class="note-lines">
+                <div class="note-line" style="margin-top:18px"></div>
+                <div class="note-line"></div>
+                <div class="note-line"></div>
+              </div>
+              <div class="flip-corner">
+                <span class="flip-corner-inner">▶</span>
+              </div>
             </div>
+
           </div>
+        </div>
 
-          <!-- Right page: tasks & reminder -->
-          <div class="page-right">
-            <div class="tasks-title">Tâches du jour</div>
+        <div class="subtitle">Tournez les pages comme un <strong>vrai agenda</strong></div>
+      </div>
 
-            <div class="task-item">
-              <div class="task-check done"></div>
-              <span class="task-text done-text">Épicerie</span>
-            </div>
-            <div class="task-item">
-              <div class="task-check done"></div>
-              <span class="task-text done-text">Appeler Marie</span>
-            </div>
-            <div class="task-item">
-              <div class="task-check"></div>
-              <span class="task-text">Rapport mensuel</span>
-            </div>
-            <div class="task-item">
-              <div class="task-check"></div>
-              <span class="task-text">Yoga 18h</span>
-            </div>
-
-            <div class="reminder-chip">🔔 Yoga dans 2h</div>
-
-            <div class="note-lines">
-              <div class="note-line" style="margin-top:18px"></div>
-              <div class="note-line"></div>
-              <div class="note-line"></div>
-            </div>
-
-            <!-- Flip corner -->
-            <div class="flip-corner">
-              <span class="flip-corner-inner">▶</span>
-            </div>
+      <!-- Right: pills -->
+      <div class="right-panel">
+        <div class="pill">
+          <span class="pill-icon">🗓️</span>
+          <div class="pill-info">
+            <strong>Vue mensuelle</strong>
+            <span>Planifiez facilement</span>
           </div>
+        </div>
+        <div class="pill">
+          <span class="pill-icon">⚡</span>
+          <div class="pill-info">
+            <strong>Rappels rapides</strong>
+            <span>Ne rien oublier</span>
+          </div>
+        </div>
+        <div class="pill">
+          <span class="pill-icon">🌈</span>
+          <div class="pill-info">
+            <strong>Coloré & intuitif</strong>
+            <span>Votre style, vos couleurs</span>
+          </div>
+        </div>
+      </div>
 
-        </div><!-- /book -->
-      </div><!-- /book-wrapper -->
-
-      <div class="subtitle">Tournez les pages comme un <strong>vrai agenda</strong></div>
     </div>
-
-    <!-- Right: feature pills -->
-    <div class="right-panel">
-      <div class="pill">
-        <span class="pill-icon">🗓️</span>
-        <div class="pill-info">
-          <strong>Vue mensuelle</strong>
-          <span>Planifiez facilement</span>
-        </div>
-      </div>
-      <div class="pill">
-        <span class="pill-icon">⚡</span>
-        <div class="pill-info">
-          <strong>Rappels rapides</strong>
-          <span>Ne rien oublier</span>
-        </div>
-      </div>
-      <div class="pill">
-        <span class="pill-icon">🌈</span>
-        <div class="pill-info">
-          <strong>Coloré & intuitif</strong>
-          <span>Votre style, vos couleurs</span>
-        </div>
-      </div>
-    </div>
-
   </div>
+
+
+  <!-- ─── FEATURES GRID ─── -->
+  <div class="features-section">
+    <p class="section-eyebrow">Tout ce dont vous avez besoin</p>
+    <h2 class="section-title">Des fonctionnalités pensées pour votre quotidien</h2>
+    <p class="section-sub">Un seul endroit. Zéro friction.</p>
+
+    <div class="cards-grid">
+
+      <!-- Daily Brief – wide -->
+      <div class="card card-brief card-wide">
+        <span class="card-emoji">☀️</span>
+        <div class="ai-tag">IA · LU À VOIX HAUTE</div>
+        <div class="card-title">Daily Brief</div>
+        <p class="card-desc">
+          Chaque matin, un résumé personnalisé qui présente vos événements du jour, vos tâches,
+          la météo, des suggestions de tenue vestimentaire, un résumé de nouvelles choisies selon
+          vos intérêts, et une citation inspirante. Il peut être <strong>lu à voix haute</strong>.
+        </p>
+      </div>
+
+      <!-- Feed tout-en-un -->
+      <div class="card card-feed">
+        <span class="card-emoji">📋</span>
+        <div class="card-title">Feed tout-en-un</div>
+        <p class="card-desc">
+          Un seul écran réunit votre calendrier, vos tâches, vos notes, vos habitudes,
+          votre brief et la météo en temps réel — sans jamais changer d'application.
+        </p>
+      </div>
+
+      <!-- Notifications Can't Miss -->
+      <div class="card card-notif">
+        <span class="card-emoji">🔔</span>
+        <div class="tdah-tag">TDAH-FRIENDLY</div>
+        <div class="card-title">Notifications "Can't Miss"</div>
+        <p class="card-desc">
+          Des alertes qui sonnent même quand le téléphone est en mode silencieux,
+          pour les tâches et événements vraiment importants. Particulièrement pensé
+          pour les personnes avec un TDAH.
+        </p>
+      </div>
+
+      <!-- Tâches & To-dos -->
+      <div class="card card-tasks">
+        <span class="card-emoji">✅</span>
+        <div class="card-title">Tâches & To-dos</div>
+        <p class="card-desc">
+          Listes de tâches avec rappels intelligents, partage avec d'autres personnes,
+          commentaires en temps réel, et dates d'échéance avec alarmes.
+        </p>
+      </div>
+
+      <!-- Habitudes & Objectifs – wide -->
+      <div class="card card-habits card-wide">
+        <span class="card-emoji">🎯</span>
+        <div class="card-title">Habitudes & Objectifs</div>
+        <p class="card-desc">
+          Suivi d'habitudes quotidiennes, hebdomadaires ou mensuelles avec streaks (séries),
+          progression visuelle, et dates limites pour les objectifs. Possibilité de partager
+          ses habitudes avec des amis pour rester <em>accountable</em> — si vous ratez un jour,
+          Hero envoie automatiquement un message à votre partenaire d'habitude.
+        </p>
+      </div>
+
+      <!-- Partage de calendrier -->
+      <div class="card card-share">
+        <span class="card-emoji">📅</span>
+        <div class="card-title">Partage de calendrier</div>
+        <p class="card-desc">
+          Partagez votre disponibilité avec votre partenaire, famille ou collègues,
+          en choisissant précisément ce que vous souhaitez rendre visible
+          (libre, occupé, tentative).
+        </p>
+      </div>
+
+      <!-- Tâches & Notes partagées -->
+      <div class="card card-collab">
+        <span class="card-emoji">💬</span>
+        <div class="card-title">Tâches & Notes partagées</div>
+        <p class="card-desc">
+          Notes et tâches collaboratives avec commentaires en temps réel,
+          idéal pour les couples, familles ou équipes.
+        </p>
+      </div>
+
+      <!-- Liste d'épicerie -->
+      <div class="card card-grocery">
+        <span class="card-emoji">🛒</span>
+        <div class="ai-tag">IA · INSTACART</div>
+        <div class="card-title">Liste d'épicerie intelligente</div>
+        <p class="card-desc">
+          Tapez un plat (ex. "pasta tomate") et l'IA génère automatiquement tous les ingrédients,
+          triés par rayon. Intégration directe avec Instacart pour commander en un tap,
+          avec <strong>5 % de cashback</strong> pour les abonnés SuperHero.
+        </p>
+      </div>
+
+      <!-- Saisie vocale -->
+      <div class="card card-voice">
+        <span class="card-emoji">🎙️</span>
+        <div class="card-title">Saisie vocale</div>
+        <p class="card-desc">
+          Commandes vocales mains libres pour créer des événements, tâches, notes,
+          ou même trouver un créneau disponible avec un ami —
+          Hero envoie le message à votre place.
+        </p>
+      </div>
+
+      <!-- Photo vers texte -->
+      <div class="card card-photo">
+        <span class="card-emoji">📷</span>
+        <div class="ai-tag">IA · OCR</div>
+        <div class="card-title">Photo vers texte</div>
+        <p class="card-desc">
+          Photographiez une note, un email ou une liste papier — Hero extrait automatiquement
+          les événements, tâches et notes, et les place au bon endroit dans l'application.
+        </p>
+      </div>
+
+      <!-- Notes IA -->
+      <div class="card card-notes">
+        <span class="card-emoji">✍️</span>
+        <div class="ai-tag">IA · SUGGEST · CATEGORIZE</div>
+        <div class="card-title">Notes assistées par l'IA</div>
+        <p class="card-desc">
+          <strong>Suggest</strong> pour démarrer une note à partir d'un sujet,
+          <strong>Categorize</strong> pour organiser automatiquement une note existante.
+          Propose aussi des modèles : recettes, voyages, réunions, et plus.
+        </p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ─── FOOTER STRIP ─── -->
+  <div class="footer-strip">
+    Agenda Steph &nbsp;·&nbsp; <span>Votre vie, organisée en un seul endroit</span>
+  </div>
+
 </body>
 </html>
