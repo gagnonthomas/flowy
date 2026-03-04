@@ -890,6 +890,75 @@
     .card-learn::before     { background: #a78bfa; }
     .card-stats::before     { background: #14b8a6; }
 
+    /* ── Section 4 – Coup de cœur ── */
+    .features-section-4 {
+      background: linear-gradient(160deg, #fff0f6 0%, #fef9ec 60%, #f0f9ff 100%);
+    }
+
+    .cdc-tag {
+      display: inline-block;
+      background: linear-gradient(90deg, #e8775a, #ec4899);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .8px;
+      padding: 2px 9px;
+      border-radius: 20px;
+      margin-bottom: 10px;
+    }
+
+    .card-kitsos::before  { background: #e8775a; }
+    .card-bocal::before   { background: #f59e0b; }
+    .card-revueh::before  { background: #10b981; }
+    .card-365::before     { background: #7c6fcd; }
+
+    /* ── Section 5 – Idées & Innovations ── */
+    .features-section-5 {
+      background: linear-gradient(180deg, #f0fdf9 0%, #fafafa 100%);
+    }
+
+    /* Theme divider inside a grid */
+    .theme-divider {
+      grid-column: 1 / -1;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-top: 8px;
+      margin-bottom: -4px;
+    }
+
+    .theme-divider-label {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: .6px;
+      color: #7c6fcd;
+      white-space: nowrap;
+    }
+
+    .theme-divider-line {
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(90deg, #d8d0f5 0%, transparent 100%);
+    }
+
+    /* Section-5 card accents */
+    .card-dream::before    { background: #4f46e5; }
+    .card-sommeil::before  { background: #1e3a5f; }
+    .card-lune::before     { background: #8b5cf6; }
+    .card-respir::before   { background: #0ea5e9; }
+    .card-lettre::before   { background: #f59e0b; }
+    .card-energym::before  { background: #f97316; }
+    .card-hydra::before    { background: #06b6d4; }
+    .card-cyclem::before   { background: #ec4899; }
+    .card-defi30::before   { background: #10b981; }
+    .card-audit::before    { background: #64748b; }
+    .card-stacking::before { background: #7c6fcd; }
+    .card-badjour::before  { background: #e8775a; }
+    .card-voyage::before   { background: #14b8a6; }
+    .card-relat::before    { background: #f472b6; }
+    .card-inspi::before    { background: #a78bfa; }
+    .card-jcrea::before    { background: #ec4899; }
+
     /* ═══════════════════════════════════════
        FOOTER STRIP
     ═══════════════════════════════════════ */
@@ -1718,6 +1787,281 @@
         <p class="card-desc">
           Des données sur votre progression et vos habitudes pour mieux vous comprendre,
           identifier vos patterns d'énergie, et rester sur la bonne voie.
+        </p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ─── FEATURES SECTION 4 – COUP DE CŒUR ─── -->
+  <div class="features-section features-section-4">
+    <p class="section-eyebrow">Ce qui nous démarque vraiment</p>
+    <h2 class="section-title">Nos 4 coups de cœur</h2>
+    <p class="section-sub">Ces quatre fonctionnalités concentrent l'ADN bien-être et émotionnel d'Agenda Steph. Elles n'existent nulle part ailleurs dans cette combinaison.</p>
+
+    <div class="cards-grid">
+
+      <!-- Kit de secours émotionnel – wide -->
+      <div class="card card-kitsos card-wide">
+        <span class="card-emoji">🧰</span>
+        <div class="cdc-tag">COUP DE CŒUR ✦</div>
+        <div class="card-title">Kit de secours émotionnel</div>
+        <p class="card-desc">
+          Une page personnalisable qu'on prépare <strong>à l'avance</strong> pour les mauvais jours :
+          activités réconfortantes, personnes à appeler, phrases rassurantes, musiques apaisantes.
+          Accessible en <strong>un seul tap depuis l'accueil</strong>. Quand ça va mal, vous n'avez
+          plus à chercher — tout est déjà là, prêt pour vous.
+        </p>
+      </div>
+
+      <!-- Bocal à souvenirs positifs -->
+      <div class="card card-bocal">
+        <span class="card-emoji">🫙</span>
+        <div class="cdc-tag">COUP DE CŒUR ✦</div>
+        <div class="card-title">Bocal à souvenirs positifs</div>
+        <p class="card-desc">
+          Chaque jour, ajoutez un petit moment de joie — un texte, un emoji, une phrase.
+          En fin d'année, "ouvrez le bocal" et relisez tous ces moments d'un coup.
+          Visuellement puissant, émotionnellement fort.
+        </p>
+      </div>
+
+      <!-- Revue hebdomadaire guidée -->
+      <div class="card card-revueh">
+        <span class="card-emoji">📖</span>
+        <div class="cdc-tag">COUP DE CŒUR ✦</div>
+        <div class="card-title">Revue hebdomadaire guidée</div>
+        <p class="card-desc">
+          Chaque dimanche, 5 à 7 questions structurées : ce qui s'est bien passé, ce qui a été
+          difficile, l'intention de la semaine suivante. L'IA génère ensuite un
+          <strong>résumé narratif de votre semaine</strong> basé sur vos données réelles.
+        </p>
+      </div>
+
+      <!-- Tableau de bord 365 jours – wide -->
+      <div class="card card-365 card-wide">
+        <span class="card-emoji">🗺️</span>
+        <div class="cdc-tag">COUP DE CŒUR ✦</div>
+        <div class="card-title">Tableau de bord annuel — 365 jours</div>
+        <p class="card-desc">
+          Une vue 365 jours inspirée des <strong>GitHub Contributions</strong> : chaque jour se colorie
+          selon votre humeur ou vos habitudes complétées. Beau, parlant, motivant.
+          En un regard, vous voyez votre année entière — les bons caps, les creux,
+          les reprises. Un miroir de votre progression sur la durée.
+        </p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ─── FEATURES SECTION 5 – TOUTES LES IDÉES ─── -->
+  <div class="features-section features-section-5">
+    <p class="section-eyebrow">Idées & Innovations</p>
+    <h2 class="section-title">Un univers de fonctionnalités à explorer</h2>
+    <p class="section-sub">Des outils pensés pour chaque dimension de votre vie — du sommeil à la créativité, en passant par l'énergie et la productivité.</p>
+
+    <div class="cards-grid">
+
+      <!-- ── ROUTINE & RYTHME DE VIE ── -->
+      <div class="theme-divider">
+        <span class="theme-divider-label">🌙 ROUTINE &amp; RYTHME DE VIE</span>
+        <div class="theme-divider-line"></div>
+      </div>
+
+      <div class="card card-dream">
+        <span class="card-emoji">💭</span>
+        <div class="card-title">Journal des rêves</div>
+        <p class="card-desc">
+          Une note rapide au réveil pour capturer ses rêves avant qu'ils ne s'effacent.
+          Section matinale dédiée, accessible depuis le Daily Brief.
+        </p>
+      </div>
+
+      <div class="card card-sommeil">
+        <span class="card-emoji">😴</span>
+        <div class="card-title">Suivi du sommeil</div>
+        <p class="card-desc">
+          Heure de coucher, heure de lever, qualité ressentie (1–5 étoiles).
+          Après quelques semaines, des patterns émergent naturellement avec votre humeur
+          et votre niveau d'énergie.
+        </p>
+      </div>
+
+      <div class="card card-lune">
+        <span class="card-emoji">🌙</span>
+        <div class="nd-tag">COMMUNAUTÉS BIEN-ÊTRE</div>
+        <div class="card-title">Cycle lunaire</div>
+        <p class="card-desc">
+          Affichez la phase lunaire du jour (nouvelle lune, pleine lune…) et associez
+          des intentions à chaque phase. Inspiré du Cycle Seasons de Structured,
+          pour tout le monde.
+        </p>
+      </div>
+
+      <!-- ── SANTÉ MENTALE & ÉMOTIONNEL ── -->
+      <div class="theme-divider">
+        <span class="theme-divider-label">💭 SANTÉ MENTALE &amp; ÉMOTIONNEL</span>
+        <div class="theme-divider-line"></div>
+      </div>
+
+      <div class="card card-respir card-wide">
+        <span class="card-emoji">🫁</span>
+        <div class="card-title">Exercices de respiration guidés</div>
+        <p class="card-desc">
+          Trois techniques intégrées avec <strong>animation visuelle</strong> :
+          cohérence cardiaque (5-5), box breathing (4-4-4-4), méthode 4-7-8.
+          Parfait avant une réunion stressante, après un conflit, ou au coucher.
+          Aucune application tierce nécessaire.
+        </p>
+      </div>
+
+      <div class="card card-lettre">
+        <span class="card-emoji">✉️</span>
+        <div class="card-title">Lettre à soi-même</div>
+        <p class="card-desc">
+          Écrivez une lettre à lire dans 3, 6 ou 12 mois — une capsule temporelle
+          intégrée directement dans l'app. Notification douce à la date choisie.
+        </p>
+      </div>
+
+      <!-- ── ÉNERGIE & CORPS ── -->
+      <div class="theme-divider">
+        <span class="theme-divider-label">⚡ ÉNERGIE &amp; CORPS</span>
+        <div class="theme-divider-line"></div>
+      </div>
+
+      <div class="card card-energym card-wide">
+        <span class="card-emoji">🔋</span>
+        <div class="ai-tag">IA · OPTIMISATION</div>
+        <div class="card-title">Energy Monitor</div>
+        <p class="card-desc">
+          Évaluez votre niveau d'énergie matin / midi / soir sur une échelle simple,
+          puis visualisez les patterns sur le mois.
+          L'IA suggère ensuite de placer vos tâches exigeantes aux moments où
+          vous êtes <strong>historiquement au meilleur</strong> — inspiré de Structured.
+        </p>
+      </div>
+
+      <div class="card card-hydra">
+        <span class="card-emoji">💧</span>
+        <div class="card-title">Tracker d'hydratation</div>
+        <p class="card-desc">
+          Compteur de verres d'eau quotidien avec rappels progressifs et animation
+          motivante. Simple, efficace, et très utilisé.
+        </p>
+      </div>
+
+      <div class="card card-cyclem card-wide">
+        <span class="card-emoji">🌸</span>
+        <div class="card-title">Suivi de cycle menstruel</div>
+        <p class="card-desc">
+          Phases menstruation, folliculaire, ovulation et lutéale — avec des
+          <strong>conseils d'adaptation du planning</strong> à chaque phase.
+          Dans l'esprit de Cycle Seasons : planifier avec son corps, pas contre lui.
+        </p>
+      </div>
+
+      <!-- ── OBJECTIFS & DÉFIS ── -->
+      <div class="theme-divider">
+        <span class="theme-divider-label">🎯 OBJECTIFS &amp; DÉFIS</span>
+        <div class="theme-divider-line"></div>
+      </div>
+
+      <div class="card card-defi30 card-wide">
+        <span class="card-emoji">🔥</span>
+        <div class="card-title">Défis 30 jours</div>
+        <p class="card-desc">
+          Lancez un défi personnel (méditation quotidienne, sans sucre, lire 10 pages/jour)
+          avec un <strong>calendrier visuel qui se colorie</strong> au fur et à mesure.
+          Le principe "ne cassez pas la chaîne" est l'un des leviers de motivation
+          les plus puissants — et visuellement addictif.
+        </p>
+      </div>
+
+      <!-- ── PRODUCTIVITÉ AVANCÉE ── -->
+      <div class="theme-divider">
+        <span class="theme-divider-label">🧠 PRODUCTIVITÉ AVANCÉE</span>
+        <div class="theme-divider-line"></div>
+      </div>
+
+      <div class="card card-audit">
+        <span class="card-emoji">🔍</span>
+        <div class="card-title">Audit du temps</div>
+        <p class="card-desc">
+          Pendant une semaine, notez rapidement ce que vous faites réellement (vs ce que
+          vous planifiez). Révèle souvent des écarts surprenants entre planning idéal et réalité.
+        </p>
+      </div>
+
+      <div class="card card-stacking">
+        <span class="card-emoji">🔗</span>
+        <div class="card-title">Habit Stacking</div>
+        <p class="card-desc">
+          Associez deux habitudes : "Après mon café → méditation 5 min".
+          L'app affiche les paires et les suit ensemble pour ancrer les nouvelles routines
+          dans l'existant.
+        </p>
+      </div>
+
+      <div class="card card-badjour card-wide">
+        <span class="card-emoji">🛟</span>
+        <div class="nd-tag">TDAH-FRIENDLY · TIIMO</div>
+        <div class="card-title">Mode "mauvais jour"</div>
+        <p class="card-desc">
+          Un bouton d'urgence qui simplifie l'interface à l'essentiel, réduit la liste du jour
+          aux <strong>3 tâches prioritaires seulement</strong>, et affiche un message bienveillant.
+          Parce que certains jours, moins c'est vraiment plus.
+        </p>
+      </div>
+
+      <!-- ── VIE PRATIQUE ── -->
+      <div class="theme-divider">
+        <span class="theme-divider-label">🌍 VIE PRATIQUE</span>
+        <div class="theme-divider-line"></div>
+      </div>
+
+      <div class="card card-voyage card-wide">
+        <span class="card-emoji">✈️</span>
+        <div class="ai-tag">IA · MÉTÉO · DESTINATION</div>
+        <div class="card-title">Planificateur voyage</div>
+        <p class="card-desc">
+          Un onglet dédié avec <strong>liste de valise générée par l'IA</strong> selon la destination,
+          la durée et la météo prévue — itinéraire jour par jour et checklist avant départ.
+          Ne plus jamais oublier l'adaptateur ou le passeport.
+        </p>
+      </div>
+
+      <div class="card card-relat">
+        <span class="card-emoji">💌</span>
+        <div class="card-title">Tracker de relations</div>
+        <p class="card-desc">
+          Personnes à contacter régulièrement ("Appeler maman tous les 15 jours",
+          "Message à Julie"). Rappels doux, sans pression. Souvent oublié dans les planners.
+        </p>
+      </div>
+
+      <!-- ── CRÉATIVITÉ ── -->
+      <div class="theme-divider">
+        <span class="theme-divider-label">🎨 CRÉATIVITÉ</span>
+        <div class="theme-divider-line"></div>
+      </div>
+
+      <div class="card card-inspi">
+        <span class="card-emoji">🌅</span>
+        <div class="ai-tag">IA · PERSONNALISÉ</div>
+        <div class="card-title">Mur d'inspiration quotidien</div>
+        <p class="card-desc">
+          Une image ou citation générée par l'IA chaque matin selon votre humeur du jour.
+          Plus visuel et personnalisé que l'Oracle — un rituel positif pour commencer.
+        </p>
+      </div>
+
+      <div class="card card-jcrea">
+        <span class="card-emoji">🖍️</span>
+        <div class="card-title">Journal créatif</div>
+        <p class="card-desc">
+          Un espace de griffonnage libre avec des outils basiques (couleurs, formes)
+          pour exprimer ce qu'on ne sait pas encore mettre en mots.
         </p>
       </div>
 
