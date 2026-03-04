@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Agenda Steph – All in 1</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: linear-gradient(135deg, #f5f0ff 0%, #ffe8f0 50%, #fff5e0 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .hero {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 48px;
+      padding: 48px 32px;
+      max-width: 1100px;
+      width: 100%;
+    }
+
+    /* ── Left feature list ── */
+    .features {
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+
+    .feature-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      cursor: default;
+    }
+
+    .feature-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      flex-shrink: 0;
+      box-shadow: 0 4px 12px rgba(0,0,0,.12);
+    }
+
+    .icon-calendar  { background: #7c6fcd; }
+    .icon-tasks     { background: #e8775a; }
+    .icon-reminders { background: #5aace8; }
+    .icon-notes     { background: #5ac88a; }
+
+    .feature-label {
+      font-size: 15px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    /* ── Centre – planner mockup ── */
+    .center {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .app-title {
+      font-size: 38px;
+      font-weight: 800;
+      color: #2d2d2d;
+      letter-spacing: -1px;
+    }
+
+    .app-title span {
+      color: #7c6fcd;
+    }
+
+    /* Planner book */
+    .book-wrapper {
+      position: relative;
+      width: 340px;
+      height: 420px;
+      filter: drop-shadow(0 20px 40px rgba(0,0,0,.18));
+    }
+
+    .book {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      display: flex;
+    }
+
+    /* Left page */
+    .page-left {
+      width: 50%;
+      height: 100%;
+      background: #fff;
+      border-radius: 12px 0 0 12px;
+      padding: 20px 16px;
+      border-right: 1px solid #e0d8ff;
+      overflow: hidden;
+    }
+
+    .page-right {
+      width: 50%;
+      height: 100%;
+      background: #fafafa;
+      border-radius: 0 12px 12px 0;
+      padding: 20px 16px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Spine shadow */
+    .book::after {
+      content: '';
+      position: absolute;
+      left: 50%;
+      top: 0;
+      transform: translateX(-50%);
+      width: 6px;
+      height: 100%;
+      background: linear-gradient(to right, #d4c8ff, #f0ecff, #d4c8ff);
+      z-index: 2;
+    }
+
+    /* Flip corner */
+    .flip-corner {
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      width: 70px;
+      height: 70px;
+      background: linear-gradient(135deg, #e8e0ff 40%, #c4b8ff 100%);
+      clip-path: polygon(100% 0, 100% 100%, 0 100%);
+      border-radius: 0 0 12px 0;
+      cursor: pointer;
+      transition: transform .3s ease;
+    }
+
+    .flip-corner:hover { transform: scale(1.15); }
+
+    .flip-corner-inner {
+      position: absolute;
+      bottom: 4px;
+      right: 6px;
+      font-size: 11px;
+      color: #7c6fcd;
+      font-weight: 700;
+    }
+
+    /* Month header on left page */
+    .month-header {
+      font-size: 13px;
+      font-weight: 700;
+      color: #7c6fcd;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 12px;
+    }
+
+    /* Mini calendar grid */
+    .mini-cal {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 3px;
+      font-size: 9px;
+    }
+
+    .mini-cal .day-name {
+      text-align: center;
+      color: #999;
+      font-weight: 600;
+    }
+
+    .mini-cal .day {
+      text-align: center;
+      padding: 3px 0;
+      border-radius: 4px;
+      color: #444;
+    }
+
+    .mini-cal .day.today {
+      background: #7c6fcd;
+      color: #fff;
+      font-weight: 700;
+    }
+
+    .mini-cal .day.event {
+      background: #ffe8f0;
+      color: #e8775a;
+      font-weight: 600;
+    }
+
+    /* Right page – task list */
+    .tasks-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: #e8775a;
+      text-transform: uppercase;
+      letter-spacing: .8px;
+      margin-bottom: 10px;
+    }
+
+    .task-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .task-check {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      border: 2px solid #ccc;
+      flex-shrink: 0;
+    }
+
+    .task-check.done {
+      background: #5ac88a;
+      border-color: #5ac88a;
+    }
+
+    .task-text {
+      font-size: 10px;
+      color: #555;
+    }
+
+    .task-text.done-text {
+      text-decoration: line-through;
+      color: #aaa;
+    }
+
+    /* Reminder chip */
+    .reminder-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: #e8f4ff;
+      color: #5aace8;
+      border-radius: 20px;
+      padding: 4px 10px;
+      font-size: 10px;
+      font-weight: 600;
+      margin-top: 14px;
+    }
+
+    /* Note lines */
+    .note-lines {
+      margin-top: 14px;
+    }
+
+    .note-line {
+      height: 1px;
+      background: #f0eeff;
+      margin-bottom: 8px;
+    }
+
+    .note-text {
+      font-size: 9px;
+      color: #bbb;
+      font-style: italic;
+    }
+
+    .subtitle {
+      font-size: 15px;
+      color: #888;
+      font-weight: 500;
+      letter-spacing: .3px;
+    }
+
+    .subtitle strong {
+      color: #7c6fcd;
+    }
+
+    /* Floating badge */
+    .badge {
+      position: absolute;
+      top: -14px;
+      left: -20px;
+      background: #fff;
+      border-radius: 12px;
+      padding: 8px 14px;
+      box-shadow: 0 6px 20px rgba(0,0,0,.13);
+      font-size: 12px;
+      font-weight: 700;
+      color: #7c6fcd;
+      white-space: nowrap;
+    }
+
+    /* ── Right side – testimonial / feature pills ── */
+    .right-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      max-width: 200px;
+    }
+
+    .pill {
+      background: #fff;
+      border-radius: 16px;
+      padding: 16px 18px;
+      box-shadow: 0 4px 16px rgba(0,0,0,.08);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .pill-icon {
+      font-size: 26px;
+    }
+
+    .pill-info strong {
+      display: block;
+      font-size: 13px;
+      color: #2d2d2d;
+    }
+
+    .pill-info span {
+      font-size: 11px;
+      color: #999;
+    }
+  </style>
+</head>
+<body>
+  <div class="hero">
+
+    <!-- Left: feature list -->
+    <div class="features">
+      <div class="feature-item">
+        <div class="feature-icon icon-calendar">📅</div>
+        <span class="feature-label">Calendrier</span>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon icon-tasks">✅</div>
+        <span class="feature-label">Tâches</span>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon icon-reminders">🔔</div>
+        <span class="feature-label">Rappels</span>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon icon-notes">📝</div>
+        <span class="feature-label">Notes</span>
+      </div>
+    </div>
+
+    <!-- Centre: mockup -->
+    <div class="center">
+      <div class="app-title">All in <span>1</span></div>
+
+      <div class="book-wrapper">
+        <div class="badge">📖 Tourne les pages !</div>
+        <div class="book">
+
+          <!-- Left page: mini calendar -->
+          <div class="page-left">
+            <div class="month-header">Mars 2026</div>
+            <div class="mini-cal">
+              <span class="day-name">L</span><span class="day-name">M</span>
+              <span class="day-name">M</span><span class="day-name">J</span>
+              <span class="day-name">V</span><span class="day-name">S</span>
+              <span class="day-name">D</span>
+
+              <span class="day"></span><span class="day"></span>
+              <span class="day"></span><span class="day"></span>
+              <span class="day">1</span><span class="day">2</span><span class="day">3</span>
+
+              <span class="day">4</span><span class="day today">5</span>
+              <span class="day">6</span><span class="day">7</span>
+              <span class="day event">8</span><span class="day">9</span><span class="day">10</span>
+
+              <span class="day">11</span><span class="day">12</span>
+              <span class="day">13</span><span class="day">14</span>
+              <span class="day">15</span><span class="day">16</span><span class="day">17</span>
+
+              <span class="day">18</span><span class="day">19</span>
+              <span class="day">20</span><span class="day">21</span>
+              <span class="day">22</span><span class="day">23</span><span class="day">24</span>
+
+              <span class="day">25</span><span class="day">26</span>
+              <span class="day">27</span><span class="day">28</span>
+              <span class="day">29</span><span class="day">30</span><span class="day">31</span>
+            </div>
+
+            <!-- Note lines -->
+            <div class="note-lines" style="margin-top:18px">
+              <div class="note-line"></div>
+              <div class="note-text">Rendez-vous médecin 8 mars</div>
+              <div class="note-line" style="margin-top:8px"></div>
+              <div class="note-line"></div>
+              <div class="note-line"></div>
+            </div>
+          </div>
+
+          <!-- Right page: tasks & reminder -->
+          <div class="page-right">
+            <div class="tasks-title">Tâches du jour</div>
+
+            <div class="task-item">
+              <div class="task-check done"></div>
+              <span class="task-text done-text">Épicerie</span>
+            </div>
+            <div class="task-item">
+              <div class="task-check done"></div>
+              <span class="task-text done-text">Appeler Marie</span>
+            </div>
+            <div class="task-item">
+              <div class="task-check"></div>
+              <span class="task-text">Rapport mensuel</span>
+            </div>
+            <div class="task-item">
+              <div class="task-check"></div>
+              <span class="task-text">Yoga 18h</span>
+            </div>
+
+            <div class="reminder-chip">🔔 Yoga dans 2h</div>
+
+            <div class="note-lines">
+              <div class="note-line" style="margin-top:18px"></div>
+              <div class="note-line"></div>
+              <div class="note-line"></div>
+            </div>
+
+            <!-- Flip corner -->
+            <div class="flip-corner">
+              <span class="flip-corner-inner">▶</span>
+            </div>
+          </div>
+
+        </div><!-- /book -->
+      </div><!-- /book-wrapper -->
+
+      <div class="subtitle">Tournez les pages comme un <strong>vrai agenda</strong></div>
+    </div>
+
+    <!-- Right: feature pills -->
+    <div class="right-panel">
+      <div class="pill">
+        <span class="pill-icon">🗓️</span>
+        <div class="pill-info">
+          <strong>Vue mensuelle</strong>
+          <span>Planifiez facilement</span>
+        </div>
+      </div>
+      <div class="pill">
+        <span class="pill-icon">⚡</span>
+        <div class="pill-info">
+          <strong>Rappels rapides</strong>
+          <span>Ne rien oublier</span>
+        </div>
+      </div>
+      <div class="pill">
+        <span class="pill-icon">🌈</span>
+        <div class="pill-info">
+          <strong>Coloré & intuitif</strong>
+          <span>Votre style, vos couleurs</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>
