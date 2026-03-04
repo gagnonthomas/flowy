@@ -371,17 +371,232 @@
       margin-bottom: 10px;
     }
 
-    /* TDAH badge */
-    .tdah-tag {
+    /* Neurodivergent badge */
+    .nd-tag {
       display: inline-block;
-      background: #fff0f0;
-      color: #ef4444;
+      background: linear-gradient(90deg, #f0e6ff, #ffe6f5);
+      color: #8b3cf7;
       font-size: 10px;
       font-weight: 700;
       letter-spacing: .5px;
       padding: 2px 8px;
       border-radius: 20px;
       margin-bottom: 10px;
+      border: 1px solid #e2c6ff;
+    }
+
+    /* ─── ND BANNER ─── */
+    .nd-banner {
+      background: linear-gradient(135deg, #1a1a2e 0%, #2d1b4e 50%, #1a2e3a 100%);
+      padding: 72px 32px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* subtle background dots */
+    .nd-banner::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: radial-gradient(circle, rgba(255,255,255,.04) 1px, transparent 1px);
+      background-size: 28px 28px;
+    }
+
+    .nd-banner-inner {
+      position: relative;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .nd-banner-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(139,60,247,.25);
+      border: 1px solid rgba(139,60,247,.4);
+      color: #c084fc;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      padding: 5px 16px;
+      border-radius: 20px;
+      margin-bottom: 20px;
+    }
+
+    .nd-banner h2 {
+      font-size: 34px;
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: -.5px;
+      margin-bottom: 12px;
+      line-height: 1.2;
+    }
+
+    .nd-banner h2 span {
+      background: linear-gradient(90deg, #c084fc, #f472b6, #60a5fa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .nd-banner-sub {
+      font-size: 15px;
+      color: rgba(255,255,255,.6);
+      margin-bottom: 44px;
+      max-width: 560px;
+      margin-left: auto;
+      margin-right: auto;
+      line-height: 1.6;
+    }
+
+    /* Condition cards row */
+    .nd-conditions {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 16px;
+      margin-bottom: 48px;
+    }
+
+    .nd-condition {
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.1);
+      border-radius: 16px;
+      padding: 20px 14px;
+      text-align: center;
+      transition: background .2s;
+    }
+
+    .nd-condition:hover {
+      background: rgba(255,255,255,.1);
+    }
+
+    .nd-condition-emoji {
+      font-size: 28px;
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    .nd-condition-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 6px;
+    }
+
+    .nd-condition-desc {
+      font-size: 11px;
+      color: rgba(255,255,255,.5);
+      line-height: 1.5;
+    }
+
+    /* Feature chips under each condition */
+    .nd-chips {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .nd-chip {
+      background: rgba(255,255,255,.1);
+      color: rgba(255,255,255,.75);
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 10px;
+    }
+
+    /* Sensory modes grid */
+    .nd-sensory {
+      margin-bottom: 48px;
+    }
+
+    .nd-sensory-title {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,.35);
+      margin-bottom: 20px;
+    }
+
+    .nd-sensory-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+    }
+
+    .nd-sensory-card {
+      background: rgba(255,255,255,.05);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 16px;
+      padding: 20px 16px;
+      text-align: left;
+      transition: background .2s;
+    }
+
+    .nd-sensory-card:hover {
+      background: rgba(255,255,255,.09);
+    }
+
+    .nd-sensory-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      font-size: 20px;
+      margin-bottom: 12px;
+    }
+
+    .nd-sensory-name {
+      font-size: 14px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 6px;
+    }
+
+    .nd-sensory-text {
+      font-size: 12px;
+      color: rgba(255,255,255,.5);
+      line-height: 1.6;
+    }
+
+    /* Bottom stat bar */
+    .nd-stats {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      padding-top: 36px;
+      border-top: 1px solid rgba(255,255,255,.08);
+    }
+
+    .nd-stat {
+      text-align: center;
+    }
+
+    .nd-stat-num {
+      font-size: 28px;
+      font-weight: 800;
+      color: #fff;
+      display: block;
+    }
+
+    .nd-stat-num span {
+      background: linear-gradient(90deg, #c084fc, #f472b6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .nd-stat-label {
+      font-size: 12px;
+      color: rgba(255,255,255,.45);
+      margin-top: 2px;
     }
 
     /* Wide card (spans 2 cols) */
@@ -686,12 +901,12 @@
       <!-- Notifications Can't Miss -->
       <div class="card card-notif">
         <span class="card-emoji">🔔</span>
-        <div class="tdah-tag">TDAH-FRIENDLY</div>
+        <div class="nd-tag">NEURODIVERGENT-FRIENDLY</div>
         <div class="card-title">Notifications "Can't Miss"</div>
         <p class="card-desc">
           Des alertes qui sonnent même quand le téléphone est en mode silencieux,
-          pour les tâches et événements vraiment importants. Particulièrement pensé
-          pour les personnes avec un TDAH.
+          pour les tâches et événements vraiment importants. Conçu pour les personnes
+          avec un TDAH, de l'anxiété ou tout profil qui a besoin d'une aide fiable à la mémoire.
         </p>
       </div>
 
@@ -787,6 +1002,132 @@
     </div>
   </div>
 
+  <!-- ─── ND BANNER ─── -->
+  <div class="nd-banner">
+    <div class="nd-banner-inner">
+
+      <div class="nd-banner-eyebrow">
+        🧠 Cerveaux différents
+      </div>
+      <h2>Conçu pour les <span>cerveaux qui fonctionnent autrement</span></h2>
+      <p class="nd-banner-sub">
+        Que vous ayez un TDAH, soyez sur le spectre autistique, dyslexique, anxieux ou simplement
+        un cerveau qui ne rentre pas dans les cases — chaque fonctionnalité a été pensée pour vous.
+      </p>
+
+      <div class="nd-conditions">
+
+        <div class="nd-condition">
+          <span class="nd-condition-emoji">⚡</span>
+          <div class="nd-condition-name">TDAH</div>
+          <div class="nd-condition-desc">Attention, impulsivité, oublis fréquents</div>
+          <div class="nd-chips">
+            <span class="nd-chip">Can't Miss</span>
+            <span class="nd-chip">Replan</span>
+            <span class="nd-chip">Inbox rapide</span>
+            <span class="nd-chip">Focus Timer</span>
+          </div>
+        </div>
+
+        <div class="nd-condition">
+          <span class="nd-condition-emoji">🧩</span>
+          <div class="nd-condition-name">Autisme</div>
+          <div class="nd-condition-desc">Besoin de structure, prévisibilité, routines</div>
+          <div class="nd-chips">
+            <span class="nd-chip">Routines</span>
+            <span class="nd-chip">Timeline</span>
+            <span class="nd-chip">Daily Brief</span>
+            <span class="nd-chip">Feed unique</span>
+          </div>
+        </div>
+
+        <div class="nd-condition">
+          <span class="nd-condition-emoji">📖</span>
+          <div class="nd-condition-name">Dyslexie</div>
+          <div class="nd-condition-desc">Lecture, écriture, traitement textuel</div>
+          <div class="nd-chips">
+            <span class="nd-chip">Police dyslexie</span>
+            <span class="nd-chip">Saisie vocale</span>
+            <span class="nd-chip">Photo → texte</span>
+            <span class="nd-chip">Voix haute</span>
+          </div>
+        </div>
+
+        <div class="nd-condition">
+          <span class="nd-condition-emoji">🌊</span>
+          <div class="nd-condition-name">Anxiété</div>
+          <div class="nd-condition-desc">Surcharge, oubli, pensées envahissantes</div>
+          <div class="nd-chips">
+            <span class="nd-chip">Energy Monitor</span>
+            <span class="nd-chip">Progression</span>
+            <span class="nd-chip">Inbox</span>
+            <span class="nd-chip">Rappels doux</span>
+          </div>
+        </div>
+
+        <div class="nd-condition">
+          <span class="nd-condition-emoji">🌸</span>
+          <div class="nd-condition-name">Cycle & Hormones</div>
+          <div class="nd-condition-desc">Énergie variable selon les phases</div>
+          <div class="nd-chips">
+            <span class="nd-chip">Cycle Seasons</span>
+            <span class="nd-chip">Energy Monitor</span>
+            <span class="nd-chip">Routines</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Sensory modes -->
+      <div class="nd-sensory">
+        <div class="nd-sensory-title">Modes de traitement sensoriel</div>
+        <div class="nd-sensory-grid">
+
+          <div class="nd-sensory-card">
+            <span class="nd-sensory-icon" style="background:linear-gradient(135deg,#fbbf24,#f59e0b)">☀️</span>
+            <div class="nd-sensory-name">Lumière</div>
+            <p class="nd-sensory-text">Mode sombre, thème à faible contraste et réduction de la luminosité des couleurs pour les personnes hypersensibles à la lumière vive.</p>
+          </div>
+
+          <div class="nd-sensory-card">
+            <span class="nd-sensory-icon" style="background:linear-gradient(135deg,#60a5fa,#3b82f6)">🌊</span>
+            <div class="nd-sensory-name">Mouvement</div>
+            <p class="nd-sensory-text">Option "Réduire les animations" pour désactiver les transitions, les effets de rebond et les animations qui peuvent provoquer une surcharge ou de l'inconfort.</p>
+          </div>
+
+          <div class="nd-sensory-card">
+            <span class="nd-sensory-icon" style="background:linear-gradient(135deg,#a78bfa,#8b5cf6)">🔊</span>
+            <div class="nd-sensory-name">Son</div>
+            <p class="nd-sensory-text">Notifications visuelles et haptiques (vibration) en remplacement du son. Alertes douces ou percutantes selon votre profil sensoriel.</p>
+          </div>
+
+          <div class="nd-sensory-card">
+            <span class="nd-sensory-icon" style="background:linear-gradient(135deg,#34d399,#10b981)">👁️</span>
+            <div class="nd-sensory-name">Visuel</div>
+            <p class="nd-sensory-text">Interface épurée ("Focus Mode") qui masque tout sauf la tâche en cours. Couleurs douces, densité d'information ajustable, et police dyslexie disponible.</p>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="nd-stats">
+        <div class="nd-stat">
+          <span class="nd-stat-num"><span>1 / 5</span></span>
+          <div class="nd-stat-label">personnes est neurodivergente</div>
+        </div>
+        <div class="nd-stat">
+          <span class="nd-stat-num"><span>30+</span></span>
+          <div class="nd-stat-label">langues supportées</div>
+        </div>
+        <div class="nd-stat">
+          <span class="nd-stat-num"><span>100 %</span></span>
+          <div class="nd-stat-label">des fonctionnalités ND accessibles sans surcoût</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
   <!-- ─── FEATURES SECTION 2 ─── -->
   <div class="features-section features-section-2">
     <p class="section-eyebrow">Le moteur sous le capot</p>
@@ -798,6 +1139,7 @@
       <!-- Timeline visuelle – full width -->
       <div class="card card-timeline card-full">
         <span class="card-emoji">⏱️</span>
+        <div class="nd-tag">TDAH · AUTISME · ANXIÉTÉ</div>
         <div class="card-title">Timeline visuelle — le cœur de l'app</div>
         <p class="card-desc">
           La vue centrale : créez des tâches en un instant, réorganisez-les par <strong>drag &amp; drop</strong>,
@@ -843,10 +1185,11 @@
       <!-- Inbox -->
       <div class="card card-inbox">
         <span class="card-emoji">📥</span>
+        <div class="nd-tag">TDAH · ANXIÉTÉ</div>
         <div class="card-title">Inbox</div>
         <p class="card-desc">
           Capturez des idées instantanément dans l'Inbox et triez-les plus tard,
-          sans perturber le planning en cours.
+          sans perturber le planning en cours. Idéal pour les cerveaux qui pensent vite.
         </p>
       </div>
 
@@ -931,9 +1274,10 @@
       <!-- Focus Timer -->
       <div class="card card-focus">
         <span class="card-emoji">⏱️</span>
+        <div class="nd-tag">TDAH · AUTISME</div>
         <div class="card-title">Focus Timer (Pomodoro)</div>
         <p class="card-desc">
-          Restez concentrée avec un minuteur Focus dédié, des Live Activities et des widgets interactifs.
+          Restez concentrée avec un minuteur Focus dédié, des Live Activities et des widgets interactifs. Structurez le temps pour mieux le ressentir.
         </p>
       </div>
 
@@ -960,6 +1304,7 @@
       <!-- Accessibilité -->
       <div class="card card-access">
         <span class="card-emoji">♿</span>
+        <div class="nd-tag">DYSLEXIE · AUTISME · TDAH</div>
         <div class="card-title">Accessibilité</div>
         <p class="card-desc">
           VoiceOver, Voice Control, police adaptée à la dyslexie,
