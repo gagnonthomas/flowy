@@ -2,6 +2,7 @@
   "expo": {
     "name": "Flowy",
     "slug": "flowy",
+    "scheme": "flowy",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -25,6 +26,7 @@
       "package": "com.flowy.app"
     },
     "web": {
+      "bundler": "metro",
       "favicon": "./assets/favicon.png"
     },
     "extra": {
@@ -32,6 +34,9 @@
         "projectId": "fb0632a7-fa04-4f67-8030-05c69796af84"
       }
     },
-    "owner": "gagnonthomas"
+    "owner": "gagnonthomas",
+    "plugins": [
+      "expo-router"
+    ]
   }
 }
