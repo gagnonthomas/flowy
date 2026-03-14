@@ -7,6 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeIn } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import { useFlowiStore } from '@/store';
+import { SwipeTask } from '@/components/ui/SwipeTask';
 import { colors } from '@/constants/colors';
 import { getToday } from '@/utils/date';
 import type { PriorityKey } from '@/constants/colors';
@@ -137,18 +138,15 @@ export default function TachesScreen() {
                   <Text style={styles.todoTextDone} numberOfLines={1}>{todo.text}</Text>
                 </View>
               ) : (
-                <Animated.View entering={FadeIn.duration(200)} style={styles.todoCard}>
-                  <TouchableOpacity
-                    style={styles.checkbox}
-                    onPress={() => { completeTodo(todo.id); Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); }}
-                  >
-                    <View style={[styles.checkInner, { borderColor: colors[todo.priority] }]} />
-                  </TouchableOpacity>
-                  <Text style={styles.todoText} numberOfLines={2}>{todo.text}</Text>
-                  <TouchableOpacity onPress={() => deleteTodo(todo.id)}>
-                    <Text style={styles.deleteBtn}>✕</Text>
-                  </TouchableOpacity>
-                </Animated.View>
+                <SwipeTask
+                  onComplete={() => completeTodo(todo.id)}
+                  onDelete={() => deleteTodo(todo.id)}
+                >
+                  <View style={styles.todoCard}>
+                    <View style={[styles.prioDot, { backgroundColor: colors[todo.priority] }]} />
+                    <Text style={styles.todoText} numberOfLines={2}>{todo.text}</Text>
+                  </View>
+                </SwipeTask>
               )
             }
             ListEmptyComponent={
@@ -236,6 +234,7 @@ const styles = StyleSheet.create({
   checkInner: { width: 22, height: 22, borderRadius: 11, borderWidth: 2 },
   checkboxDone: { width: 22, height: 22, borderRadius: 11, backgroundColor: colors.moi.accent, alignItems: 'center', justifyContent: 'center' },
   checkmark: { color: '#fff', fontSize: 13, fontWeight: '700' },
+  prioDot: { width: 8, height: 8, borderRadius: 4 },
   todoText: { flex: 1, fontSize: 15, fontFamily: 'Inter_400Regular', color: colors.text },
   todoTextDone: { flex: 1, fontSize: 14, fontFamily: 'Inter_400Regular', color: colors.muted, textDecorationLine: 'line-through' },
   deleteBtn: { fontSize: 16, color: colors.muted, padding: 4 },

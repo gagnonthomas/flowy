@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Animated, { FadeIn } from 'react-native-reanimated';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import Animated, { FadeIn, runOnJS } from 'react-native-reanimated';
+import * as Haptics from 'expo-haptics';
 import { useFlowiStore } from '@/store';
 import { colors, CATEGORIES } from '@/constants/colors';
 import {
@@ -17,17 +19,47 @@ export default function PlanningScreen() {
   const todos = useFlowiStore((s) => s.todos);
   const today = getToday();
 
-  // Week view: current week Mon-Sun
+  // Week view: swipeable week offset
+  const [weekOffset, setWeekOffset] = useState(0);
   const now = new Date();
   const dayOfWeek = (now.getDay() + 6) % 7; // Mon=0
   const weekDates: string[] = [];
   for (let i = 0; i < 7; i++) {
     const d = new Date(now);
-    d.setDate(d.getDate() - dayOfWeek + i);
+    d.setDate(d.getDate() - dayOfWeek + i + weekOffset * 7);
     weekDates.push(
       `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
     );
   }
+
+  const nextWeek = () => { setWeekOffset((o) => o + 1); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); };
+  const prevWeek = () => { setWeekOffset((o) => o - 1); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); };
+  const nextMonth = () => { setCalDate(new Date(yr, mo + 1, 1)); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); };
+  const prevMonth = () => { setCalDate(new Date(yr, mo - 1, 1)); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); };
+
+  const weekSwipe = Gesture.Pan()
+    .activeOffsetX([-20, 20])
+    .failOffsetY([-15, 15])
+    .onEnd((e) => {
+      'worklet';
+      if (e.translationX < -50) {
+        runOnJS(nextWeek)();
+      } else if (e.translationX > 50) {
+        runOnJS(prevWeek)();
+      }
+    });
+
+  const calSwipe = Gesture.Pan()
+    .activeOffsetX([-20, 20])
+    .failOffsetY([-15, 15])
+    .onEnd((e) => {
+      'worklet';
+      if (e.translationX < -50) {
+        runOnJS(nextMonth)();
+      } else if (e.translationX > 50) {
+        runOnJS(prevMonth)();
+      }
+    });
 
   // Calendar view
   const [calDate, setCalDate] = useState(new Date(now.getFullYear(), now.getMonth(), 1));
@@ -60,7 +92,21 @@ export default function PlanningScreen() {
 
       <ScrollView contentContainerStyle={styles.scroll}>
         {subTab === 'semaine' && (
+          <GestureDetector gesture={weekSwipe}>
           <Animated.View entering={FadeIn.duration(300)}>
+            <View style={styles.weekNav}>
+              <TouchableOpacity onPress={() => setWeekOffset((o) => o - 1)}>
+                <Text style={styles.calArrow}>‹</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => setWeekOffset(0)}>
+                <Text style={[styles.weekLabel, weekOffset === 0 && { color: colors.planning.accent }]}>
+                  {weekOffset === 0 ? 'Cette semaine' : `Semaine ${weekOffset > 0 ? '+' : ''}${weekOffset}`}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => setWeekOffset((o) => o + 1)}>
+                <Text style={styles.calArrow}>›</Text>
+              </TouchableOpacity>
+            </View>
             {weekDates.map((date, i) => {
               const dayEvents = eventsForDate(date);
               const dayTodos = todosForDate(date);
@@ -98,9 +144,11 @@ export default function PlanningScreen() {
               );
             })}
           </Animated.View>
+          </GestureDetector>
         )}
 
         {subTab === 'calendrier' && (
+          <GestureDetector gesture={calSwipe}>
           <Animated.View entering={FadeIn.duration(300)}>
             <View style={styles.calNav}>
               <TouchableOpacity onPress={() => setCalDate(new Date(yr, mo - 1, 1))}>
@@ -138,6 +186,7 @@ export default function PlanningScreen() {
               })}
             </View>
           </Animated.View>
+          </GestureDetector>
         )}
 
         {subTab === 'bilan' && (
@@ -172,6 +221,8 @@ const styles = StyleSheet.create({
   tabText: { fontSize: 13, fontFamily: 'Inter_400Regular', color: colors.muted },
   tabTextActive: { fontFamily: 'Inter_600SemiBold', color: colors.planning.accent },
   scroll: { padding: 20, paddingTop: 0, paddingBottom: 40 },
+  weekNav: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
+  weekLabel: { fontSize: 15, fontFamily: 'Inter_600SemiBold', color: colors.text },
   // Week view
   dayRow: { flexDirection: 'row', paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: colors.border },
   dayRowToday: { backgroundColor: colors.planning.light, borderRadius: 10, marginHorizontal: -8, paddingHorizontal: 8 },

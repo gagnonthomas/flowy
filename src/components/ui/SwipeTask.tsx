@@ -63,16 +63,24 @@ export function SwipeTask({ children, onComplete, onDelete }: SwipeTaskProps) {
       'transparent',
   }));
 
+  const hintLeftStyle = useAnimatedStyle(() => ({
+    opacity: translateX.value > 20 ? 1 : 0,
+  }));
+
+  const hintRightStyle = useAnimatedStyle(() => ({
+    opacity: translateX.value < -20 ? 1 : 0,
+  }));
+
   return (
     <Animated.View style={[styles.wrapper, bgStyle]}>
-      {/* Left hint (delete) */}
-      <View style={styles.hintLeft}>
+      {/* Left hint (delete) — visible when swiping right */}
+      <Animated.View style={[styles.hintLeft, hintLeftStyle]}>
         <Text style={styles.hintText}>🗑️</Text>
-      </View>
-      {/* Right hint (complete) */}
-      <View style={styles.hintRight}>
+      </Animated.View>
+      {/* Right hint (complete) — visible when swiping left */}
+      <Animated.View style={[styles.hintRight, hintRightStyle]}>
         <Text style={styles.hintText}>✅</Text>
-      </View>
+      </Animated.View>
 
       <GestureDetector gesture={pan}>
         <Animated.View style={animatedStyle}>

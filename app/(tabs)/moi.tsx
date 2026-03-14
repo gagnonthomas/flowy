@@ -4,17 +4,14 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeIn } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import { useFlowiStore } from '@/store';
+import { BreathingTimer } from '@/components/ui/BreathingTimer';
+import { MeditationTimer } from '@/components/ui/MeditationTimer';
 import { colors } from '@/constants/colors';
 import { getToday, getEnergySlot } from '@/utils/date';
 
 type SubTab = 'sante' | 'respiration' | 'meditation' | 'defis';
 
 const ENERGY_LABELS = ['😫', '😕', '😐', '🙂', '😄'];
-const BREATH_EXERCISES = [
-  { name: 'Cohérence cardiaque', phases: [{ label: 'Inspirer', sec: 5 }, { label: 'Expirer', sec: 5 }], rounds: 6 },
-  { name: '4-7-8 Relaxation', phases: [{ label: 'Inspirer', sec: 4 }, { label: 'Retenir', sec: 7 }, { label: 'Expirer', sec: 8 }], rounds: 4 },
-  { name: 'Box Breathing', phases: [{ label: 'Inspirer', sec: 4 }, { label: 'Retenir', sec: 4 }, { label: 'Expirer', sec: 4 }, { label: 'Retenir', sec: 4 }], rounds: 4 },
-];
 
 export default function MoiScreen() {
   const [subTab, setSubTab] = useState<SubTab>('sante');
@@ -33,8 +30,6 @@ export default function MoiScreen() {
   const energyKey = `${today}-${slot}`;
 
   const [newDefiText, setNewDefiText] = useState('');
-  const [breathActive, setBreathActive] = useState(false);
-  const [breathIdx, setBreathIdx] = useState(0);
 
   const waterToday = waterLog[today] || 0;
 
@@ -125,36 +120,13 @@ export default function MoiScreen() {
 
         {subTab === 'respiration' && (
           <Animated.View entering={FadeIn.duration(300)} style={styles.content}>
-            {BREATH_EXERCISES.map((ex, idx) => (
-              <TouchableOpacity
-                key={ex.name}
-                style={[styles.breathCard, breathIdx === idx && breathActive && styles.breathCardActive]}
-                onPress={() => { setBreathIdx(idx); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); }}
-              >
-                <Text style={styles.breathName}>{ex.name}</Text>
-                <Text style={styles.breathDetail}>
-                  {ex.phases.map((p) => `${p.label} ${p.sec}s`).join(' → ')}
-                </Text>
-                <Text style={styles.breathRounds}>{ex.rounds} cycles</Text>
-              </TouchableOpacity>
-            ))}
+            <BreathingTimer />
           </Animated.View>
         )}
 
         {subTab === 'meditation' && (
           <Animated.View entering={FadeIn.duration(300)} style={styles.content}>
-            <View style={styles.meditCard}>
-              <Text style={styles.meditEmoji}>🧘</Text>
-              <Text style={styles.meditTitle}>Méditation guidée</Text>
-              <Text style={styles.meditSubtitle}>
-                Choisis une durée et laisse-toi guider
-              </Text>
-              {[3, 5, 10, 15].map((min) => (
-                <TouchableOpacity key={min} style={styles.meditOption}>
-                  <Text style={styles.meditOptionText}>{min} minutes</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
+            <MeditationTimer />
           </Animated.View>
         )}
 
@@ -243,17 +215,6 @@ const styles = StyleSheet.create({
   habitCheck: { width: 24, height: 24, borderRadius: 12, borderWidth: 2, borderColor: colors.border, alignItems: 'center', justifyContent: 'center' },
   habitCheckDone: { backgroundColor: colors.moi.accent, borderColor: colors.moi.accent },
   habitCheckmark: { color: '#fff', fontSize: 14, fontWeight: '700' },
-  breathCard: { backgroundColor: colors.surface, borderRadius: 14, padding: 16, borderWidth: 1, borderColor: colors.border },
-  breathCardActive: { borderColor: colors.moi.accent },
-  breathName: { fontSize: 16, fontFamily: 'Inter_700Bold', color: colors.text },
-  breathDetail: { fontSize: 13, fontFamily: 'Inter_400Regular', color: colors.muted, marginTop: 4 },
-  breathRounds: { fontSize: 12, fontFamily: 'Inter_400Regular', color: colors.muted, marginTop: 2 },
-  meditCard: { backgroundColor: colors.surface, borderRadius: 14, padding: 24, borderWidth: 1, borderColor: colors.border, alignItems: 'center' },
-  meditEmoji: { fontSize: 48, marginBottom: 12 },
-  meditTitle: { fontSize: 20, fontFamily: 'Inter_700Bold', color: colors.text },
-  meditSubtitle: { fontSize: 14, fontFamily: 'Inter_400Regular', color: colors.muted, marginBottom: 16 },
-  meditOption: { paddingVertical: 12, paddingHorizontal: 24, borderRadius: 12, backgroundColor: colors.moi.light, marginBottom: 8, width: '100%', alignItems: 'center' },
-  meditOptionText: { fontSize: 15, fontFamily: 'Inter_600SemiBold', color: colors.moi.accent },
   addRow: { marginBottom: 12 },
   addInput: { borderWidth: 1, borderColor: colors.border, borderRadius: 12, padding: 14, fontSize: 15, fontFamily: 'Inter_400Regular', color: colors.text, backgroundColor: colors.surface },
   defiCard: { backgroundColor: colors.surface, borderRadius: 14, padding: 16, borderWidth: 1, borderColor: colors.border },

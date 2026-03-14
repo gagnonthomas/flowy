@@ -7,6 +7,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeIn } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import { useFlowiStore } from '@/store';
+import { SwipeTask } from '@/components/ui/SwipeTask';
+import { TimePicker } from '@/components/ui/TimePicker';
 import { colors, CATEGORIES } from '@/constants/colors';
 import { getToday } from '@/utils/date';
 
@@ -21,6 +23,7 @@ export default function AujourdhuiScreen() {
   const addEvent = useFlowiStore((s) => s.addEvent);
   const toggleEventDone = useFlowiStore((s) => s.toggleEventDone);
   const completeTodo = useFlowiStore((s) => s.completeTodo);
+  const deleteTodo = useFlowiStore((s) => s.deleteTodo);
   const toggleHabit = useFlowiStore((s) => s.toggleHabit);
   const today = getToday();
 
@@ -108,15 +111,7 @@ export default function AujourdhuiScreen() {
                 returnKeyType="done"
                 onSubmitEditing={handleAddEvent}
               />
-              <TextInput
-                style={styles.timeInput}
-                value={newTime}
-                onChangeText={setNewTime}
-                placeholder="HH:mm"
-                placeholderTextColor={colors.muted}
-                keyboardType="numbers-and-punctuation"
-                maxLength={5}
-              />
+              <TimePicker value={newTime} onChange={setNewTime} />
             </View>
 
             {/* Today's tasks */}
@@ -125,19 +120,21 @@ export default function AujourdhuiScreen() {
               <Text style={styles.empty}>Aucune tâche planifiée</Text>
             )}
             {todayTodos.map((todo) => (
-              <TouchableOpacity
+              <SwipeTask
                 key={todo.id}
-                style={styles.todoRow}
-                onPress={() => { completeTodo(todo.id); Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); }}
+                onComplete={() => completeTodo(todo.id)}
+                onDelete={() => deleteTodo(todo.id)}
               >
-                <View style={[styles.checkbox, todo.done && styles.checkboxDone]}>
-                  {todo.done && <Text style={styles.checkmark}>✓</Text>}
+                <View style={styles.todoRow}>
+                  <View style={[styles.checkbox, todo.done && styles.checkboxDone]}>
+                    {todo.done && <Text style={styles.checkmark}>✓</Text>}
+                  </View>
+                  <View style={[styles.prioDot, { backgroundColor: colors[todo.priority] }]} />
+                  <Text style={[styles.todoText, todo.done && styles.doneText]} numberOfLines={1}>
+                    {todo.text}
+                  </Text>
                 </View>
-                <View style={[styles.prioDot, { backgroundColor: colors[todo.priority] }]} />
-                <Text style={[styles.todoText, todo.done && styles.doneText]} numberOfLines={1}>
-                  {todo.text}
-                </Text>
-              </TouchableOpacity>
+              </SwipeTask>
             ))}
           </ScrollView>
         </KeyboardAvoidingView>
