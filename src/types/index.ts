@@ -19,6 +19,8 @@ export interface Event {
   category: 'rdv' | 'tache' | 'perso' | 'sante' | 'famille';
   note?: string | null;
   done: boolean;
+  deviceEventId?: string;
+  source?: 'flowi' | 'device';
 }
 
 export interface Habit {

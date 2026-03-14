@@ -7,6 +7,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeIn } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import { useFlowiStore } from '@/store';
+import { useCalendarSync } from '@/hooks/useCalendarSync';
+import { useEventActions } from '@/hooks/useEventActions';
 import { SwipeTask } from '@/components/ui/SwipeTask';
 import { TimePicker } from '@/components/ui/TimePicker';
 import { colors, CATEGORIES } from '@/constants/colors';
@@ -20,16 +22,18 @@ export default function AujourdhuiScreen() {
   const events = useFlowiStore((s) => s.events);
   const habits = useFlowiStore((s) => s.habits);
   const routines = useFlowiStore((s) => s.routines);
-  const addEvent = useFlowiStore((s) => s.addEvent);
+  const { addEvent } = useEventActions();
   const toggleEventDone = useFlowiStore((s) => s.toggleEventDone);
   const completeTodo = useFlowiStore((s) => s.completeTodo);
   const deleteTodo = useFlowiStore((s) => s.deleteTodo);
   const toggleHabit = useFlowiStore((s) => s.toggleHabit);
+  const { eventsForDate: deviceEventsForDate, hasPermission, requestAndSync } = useCalendarSync();
   const today = getToday();
 
   const todayEvents = events
     .filter((e) => e.date === today)
     .sort((a, b) => (a.time || '').localeCompare(b.time || ''));
+  const todayDeviceEvents = deviceEventsForDate(today);
   const todayTodos = todos.filter((t) => t.scheduledDate === today);
 
   // New event form state
@@ -99,6 +103,24 @@ export default function AujourdhuiScreen() {
                 </View>
               </Animated.View>
             ))}
+
+            {/* Device calendar events */}
+            {todayDeviceEvents.map((ev) => (
+              <View key={ev.id} style={[styles.eventCard, { borderLeftWidth: 3, borderLeftColor: ev.calendarColor }]}>
+                <Text style={styles.deviceBadge}>📱</Text>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.eventTitle}>{ev.title}</Text>
+                  {ev.time && <Text style={styles.eventTime}>{ev.time}{ev.endTime ? ` - ${ev.endTime}` : ''}</Text>}
+                </View>
+                <Text style={styles.calendarName}>{ev.calendarTitle}</Text>
+              </View>
+            ))}
+
+            {hasPermission === false && (
+              <TouchableOpacity style={styles.syncBtn} onPress={requestAndSync}>
+                <Text style={styles.syncBtnText}>📅 Connecter mon calendrier</Text>
+              </TouchableOpacity>
+            )}
 
             {/* Quick add event */}
             <View style={styles.addRow}>
@@ -271,6 +293,10 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   catText: { fontSize: 11, fontFamily: 'Inter_600SemiBold' },
+  deviceBadge: { fontSize: 14, marginRight: 8 },
+  calendarName: { fontSize: 10, fontFamily: 'Inter_400Regular', color: colors.muted },
+  syncBtn: { paddingVertical: 10, paddingHorizontal: 16, borderRadius: 10, backgroundColor: colors.agenda.light, alignItems: 'center', marginTop: 8, marginBottom: 4 },
+  syncBtnText: { fontSize: 13, fontFamily: 'Inter_600SemiBold', color: colors.agenda.accent },
   doneText: { textDecorationLine: 'line-through', opacity: 0.5 },
   addRow: {
     flexDirection: 'row',

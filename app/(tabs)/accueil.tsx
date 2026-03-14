@@ -3,6 +3,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 import { useFlowiStore } from '@/store';
 import { getLevel, getXpForNextLevel } from '@/store';
+import { useCalendarSync } from '@/hooks/useCalendarSync';
 import { colors } from '@/constants/colors';
 import { getToday, MONTHS_FR, formatDate } from '@/utils/date';
 
@@ -12,12 +13,14 @@ export default function AccueilScreen() {
   const events = useFlowiStore((s) => s.events);
   const habits = useFlowiStore((s) => s.habits);
   const xp = useFlowiStore((s) => s.xp);
+  const { eventsForDate: deviceEventsForDate } = useCalendarSync();
   const today = getToday();
   const level = getLevel(xp);
   const { current, needed } = getXpForNextLevel(xp);
 
   const todayTodos = todos.filter((t) => t.scheduledDate === today && !t.done);
   const todayEvents = events.filter((e) => e.date === today && !e.done);
+  const todayDeviceEvents = deviceEventsForDate(today);
   const todayHabits = habits.filter((h) => !h.done[today]);
   const completedToday = todos.filter((t) => t.doneDate === today).length;
 
@@ -48,7 +51,7 @@ export default function AccueilScreen() {
             <Text style={styles.statLabel}>tâches</Text>
           </View>
           <View style={[styles.statCard, { backgroundColor: colors.focus.light }]}>
-            <Text style={styles.statNum}>{todayEvents.length}</Text>
+            <Text style={styles.statNum}>{todayEvents.length + todayDeviceEvents.length}</Text>
             <Text style={styles.statLabel}>RDV</Text>
           </View>
           <View style={[styles.statCard, { backgroundColor: colors.moi.light }]}>

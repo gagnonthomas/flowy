@@ -5,6 +5,7 @@ import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, { FadeIn, runOnJS } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import { useFlowiStore } from '@/store';
+import { useCalendarSync } from '@/hooks/useCalendarSync';
 import { colors, CATEGORIES } from '@/constants/colors';
 import {
   getToday, MONTHS_FR, DAYS_FR,
@@ -17,6 +18,7 @@ export default function PlanningScreen() {
   const [subTab, setSubTab] = useState<SubTab>('semaine');
   const events = useFlowiStore((s) => s.events);
   const todos = useFlowiStore((s) => s.todos);
+  const { eventsForDate: deviceEventsForDate } = useCalendarSync();
   const today = getToday();
 
   // Week view: swipeable week offset
@@ -109,6 +111,7 @@ export default function PlanningScreen() {
             </View>
             {weekDates.map((date, i) => {
               const dayEvents = eventsForDate(date);
+              const dayDeviceEvents = deviceEventsForDate(date);
               const dayTodos = todosForDate(date);
               const isToday = date === today;
               const dayNum = parseInt(date.split('-')[2], 10);
@@ -130,13 +133,20 @@ export default function PlanningScreen() {
                         </Text>
                       </View>
                     ))}
+                    {dayDeviceEvents.map((ev) => (
+                      <View key={ev.id} style={[styles.chip, { backgroundColor: ev.calendarColor + '22' }]}>
+                        <Text style={[styles.chipText, { color: ev.calendarColor }]} numberOfLines={1}>
+                          📱 {ev.time ? `${ev.time} ` : ''}{ev.title}
+                        </Text>
+                      </View>
+                    ))}
                     {dayTodos.filter((t) => !t.done).slice(0, 3).map((t) => (
                       <View key={t.id} style={styles.miniTodo}>
                         <View style={[styles.miniDot, { backgroundColor: colors[t.priority] }]} />
                         <Text style={styles.miniText} numberOfLines={1}>{t.text}</Text>
                       </View>
                     ))}
-                    {dayEvents.length === 0 && dayTodos.filter((t) => !t.done).length === 0 && (
+                    {dayEvents.length === 0 && dayDeviceEvents.length === 0 && dayTodos.filter((t) => !t.done).length === 0 && (
                       <Text style={styles.emptyDay}>—</Text>
                     )}
                   </View>
@@ -172,6 +182,7 @@ export default function PlanningScreen() {
                 const d = i + 1;
                 const dateStr = `${yr}-${String(mo + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
                 const hasEvents = eventsForDate(dateStr).length > 0;
+                const hasDeviceEvents = deviceEventsForDate(dateStr).length > 0;
                 const hasTodos = todosForDate(dateStr).filter((t) => !t.done).length > 0;
                 const isT = dateStr === today;
                 return (
@@ -179,6 +190,7 @@ export default function PlanningScreen() {
                     <Text style={[styles.calDay, isT && styles.calDayToday]}>{d}</Text>
                     <View style={styles.calDots}>
                       {hasEvents && <View style={[styles.calDot, { backgroundColor: colors.agenda.accent }]} />}
+                      {hasDeviceEvents && <View style={[styles.calDot, { backgroundColor: colors.moi.accent }]} />}
                       {hasTodos && <View style={[styles.calDot, { backgroundColor: colors.todos.accent }]} />}
                     </View>
                   </View>

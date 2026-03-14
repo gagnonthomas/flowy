@@ -63,6 +63,7 @@ interface FlowiState {
   events: Event[];
   addEvent: (event: Omit<Event, 'id' | 'done'>) => void;
   updateEvent: (id: string, updates: Partial<Event>) => void;
+  setEventDeviceId: (id: string, deviceEventId: string) => void;
   deleteEvent: (id: string) => void;
   toggleEventDone: (id: string) => void;
 
@@ -184,7 +185,10 @@ export const useFlowiStore = create<FlowiState>()(
       // Events
       events: [],
       addEvent: (event) => set((s) => ({
-        events: [...s.events, { ...event, id: generateId(), done: false }],
+        events: [...s.events, { ...event, id: generateId(), done: false, source: 'flowi' as const }],
+      })),
+      setEventDeviceId: (id, deviceEventId) => set((s) => ({
+        events: s.events.map((e) => e.id === id ? { ...e, deviceEventId } : e),
       })),
       updateEvent: (id, updates) => set((s) => ({
         events: s.events.map((e) => e.id === id ? { ...e, ...updates } : e),
