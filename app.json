@@ -36,7 +36,9 @@
     },
     "owner": "gagnonthomas",
     "plugins": [
-      "expo-router"
+      "expo-router",
+      "expo-font",
+"@react-native-community/datetimepicker"
     ]
   }
 }
