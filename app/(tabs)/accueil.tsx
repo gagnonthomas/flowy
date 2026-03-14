@@ -1,4 +1,6 @@
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Modal } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 import { useFlowiStore } from '@/store';
@@ -21,6 +23,12 @@ export default function AccueilScreen() {
   const todayHabits = habits.filter((h) => !h.done[today]);
   const completedToday = todos.filter((t) => t.doneDate === today).length;
 
+  const darkMode = useFlowiStore((s) => s.darkMode);
+  const toggleDarkMode = useFlowiStore((s) => s.toggleDarkMode);
+  const userTdah = useFlowiStore((s) => s.userTdah);
+  const userObjectif = useFlowiStore((s) => s.userObjectif);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+
   const d = new Date();
   const greeting = d.getHours() < 12 ? 'Bonjour' : d.getHours() < 18 ? 'Bon après-midi' : 'Bonsoir';
 
@@ -28,8 +36,15 @@ export default function AccueilScreen() {
     <SafeAreaView style={styles.container} edges={['top']}>
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         <Animated.View entering={FadeIn.duration(500)}>
-          <Text style={styles.greeting}>{greeting},</Text>
-          <Text style={styles.name}>{userName || 'ami'} 🌿</Text>
+          <View style={styles.greetingRow}>
+            <View>
+              <Text style={styles.greeting}>{greeting},</Text>
+              <Text style={styles.name}>{userName || 'ami'} 🌿</Text>
+            </View>
+            <TouchableOpacity style={styles.settingsBtn} onPress={() => setSettingsOpen(true)}>
+              <Text style={styles.settingsIcon}>⚙️</Text>
+            </TouchableOpacity>
+          </View>
         </Animated.View>
 
         <Animated.View entering={FadeInDown.delay(150).duration(400)} style={styles.card}>
@@ -88,6 +103,74 @@ export default function AccueilScreen() {
           </Animated.View>
         )}
       </ScrollView>
+
+      {/* Settings Modal */}
+      <Modal visible={settingsOpen} transparent animationType="slide">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalSheet}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Paramètres</Text>
+              <TouchableOpacity onPress={() => setSettingsOpen(false)}>
+                <Text style={styles.modalClose}>✕</Text>
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.settingsSection}>
+              <Text style={styles.settingsSectionTitle}>Profil</Text>
+              <View style={styles.settingsRow}>
+                <Text style={styles.settingsLabel}>Nom</Text>
+                <Text style={styles.settingsValue}>{userName || '—'}</Text>
+              </View>
+              <View style={styles.settingsRow}>
+                <Text style={styles.settingsLabel}>TDAH</Text>
+                <Text style={styles.settingsValue}>{userTdah || '—'}</Text>
+              </View>
+              <View style={styles.settingsRow}>
+                <Text style={styles.settingsLabel}>Objectif</Text>
+                <Text style={[styles.settingsValue, { maxWidth: '60%', textAlign: 'right' }]}>{userObjectif || '—'}</Text>
+              </View>
+            </View>
+
+            <View style={styles.settingsSection}>
+              <Text style={styles.settingsSectionTitle}>Apparence</Text>
+              <TouchableOpacity style={styles.settingsRow} onPress={toggleDarkMode}>
+                <Text style={styles.settingsLabel}>Mode sombre</Text>
+                <Text style={styles.settingsValue}>{darkMode ? 'Activé' : 'Désactivé'}</Text>
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.settingsSection}>
+              <Text style={styles.settingsSectionTitle}>Données</Text>
+              <TouchableOpacity
+                style={styles.settingsRow}
+                onPress={() => {
+                  Alert.alert(
+                    'Effacer les données',
+                    'Toutes tes données Flowi seront supprimées. Cette action est irréversible.',
+                    [
+                      { text: 'Annuler', style: 'cancel' },
+                      {
+                        text: 'Effacer',
+                        style: 'destructive',
+                        onPress: async () => {
+                          await AsyncStorage.clear();
+                          setSettingsOpen(false);
+                          Alert.alert('Données effacées', 'Relance l\'app pour repartir de zéro.');
+                        },
+                      },
+                    ],
+                  );
+                }}
+              >
+                <Text style={[styles.settingsLabel, { color: '#DC2626' }]}>Effacer toutes les données</Text>
+                <Text style={styles.settingsValue}>🗑️</Text>
+              </TouchableOpacity>
+            </View>
+
+            <Text style={styles.versionText}>Flowi v1.0 — {userName}</Text>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -95,6 +178,21 @@ export default function AccueilScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.bg },
   scroll: { padding: 20, paddingBottom: 40 },
+  greetingRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
+  settingsBtn: { padding: 8 },
+  settingsIcon: { fontSize: 22 },
+  // Settings modal
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' },
+  modalSheet: { backgroundColor: colors.surface, borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, paddingBottom: 40 },
+  modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 },
+  modalTitle: { fontSize: 20, fontFamily: 'Inter_700Bold', color: colors.text },
+  modalClose: { fontSize: 20, color: colors.muted, padding: 4 },
+  settingsSection: { marginBottom: 20 },
+  settingsSectionTitle: { fontSize: 12, fontFamily: 'Inter_600SemiBold', color: colors.muted, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 },
+  settingsRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: colors.border },
+  settingsLabel: { fontSize: 15, fontFamily: 'Inter_400Regular', color: colors.text },
+  settingsValue: { fontSize: 14, fontFamily: 'Inter_400Regular', color: colors.muted },
+  versionText: { fontSize: 12, fontFamily: 'Inter_400Regular', color: colors.muted, textAlign: 'center', marginTop: 16 },
   greeting: {
     fontSize: 16,
     fontFamily: 'Inter_400Regular',
