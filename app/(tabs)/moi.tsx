@@ -18,12 +18,16 @@ const BREATH_EXERCISES = [
 
 export default function MoiScreen() {
   const [subTab, setSubTab] = useState<SubTab>('sante');
-  const {
-    energyLog, setEnergy,
-    waterLog, setWater,
-    habits, toggleHabit,
-    defis, addDefi, toggleDefiDay, deleteDefi,
-  } = useFlowiStore();
+  const energyLog = useFlowiStore((s) => s.energyLog);
+  const setEnergy = useFlowiStore((s) => s.setEnergy);
+  const waterLog = useFlowiStore((s) => s.waterLog);
+  const setWater = useFlowiStore((s) => s.setWater);
+  const habits = useFlowiStore((s) => s.habits);
+  const toggleHabit = useFlowiStore((s) => s.toggleHabit);
+  const defis = useFlowiStore((s) => s.defis);
+  const addDefi = useFlowiStore((s) => s.addDefi);
+  const toggleDefiDay = useFlowiStore((s) => s.toggleDefiDay);
+  const deleteDefi = useFlowiStore((s) => s.deleteDefi);
   const today = getToday();
   const slot = getEnergySlot();
   const energyKey = `${today}-${slot}`;

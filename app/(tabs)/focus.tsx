@@ -21,7 +21,7 @@ const PRESETS = [
 ];
 
 export default function FocusScreen() {
-  const { todos, earnXp } = useFlowiStore();
+  const earnXp = useFlowiStore((s) => s.earnXp);
   const [total, setTotal] = useState(1500);
   const [remaining, setRemaining] = useState(1500);
   const [active, setActive] = useState(false);

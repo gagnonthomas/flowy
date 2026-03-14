@@ -14,11 +14,14 @@ type SubTab = 'agenda' | 'routines';
 
 export default function AujourdhuiScreen() {
   const [subTab, setSubTab] = useState<SubTab>('agenda');
-  const {
-    todos, events, habits, routines,
-    addEvent, toggleEventDone, deleteEvent,
-    completeTodo, toggleHabit,
-  } = useFlowiStore();
+  const todos = useFlowiStore((s) => s.todos);
+  const events = useFlowiStore((s) => s.events);
+  const habits = useFlowiStore((s) => s.habits);
+  const routines = useFlowiStore((s) => s.routines);
+  const addEvent = useFlowiStore((s) => s.addEvent);
+  const toggleEventDone = useFlowiStore((s) => s.toggleEventDone);
+  const completeTodo = useFlowiStore((s) => s.completeTodo);
+  const toggleHabit = useFlowiStore((s) => s.toggleHabit);
   const today = getToday();
 
   const todayEvents = events

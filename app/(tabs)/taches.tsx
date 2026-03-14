@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import {
-  View, Text, StyleSheet, ScrollView, TextInput,
+  View, Text, StyleSheet, FlatList, TextInput,
   TouchableOpacity, KeyboardAvoidingView, Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Animated, { FadeIn, SlideOutLeft } from 'react-native-reanimated';
+import Animated, { FadeIn } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import { useFlowiStore } from '@/store';
 import { colors } from '@/constants/colors';
@@ -22,12 +22,15 @@ const PRIORITIES: { key: PriorityKey; label: string }[] = [
 
 export default function TachesScreen() {
   const [subTab, setSubTab] = useState<SubTab>('todos');
-  const {
-    todos, notes, selectedDate,
-    addTodo, completeTodo, deleteTodo,
-    addNote, deleteNote,
-    setSelectedDate,
-  } = useFlowiStore();
+  const todos = useFlowiStore((s) => s.todos);
+  const notes = useFlowiStore((s) => s.notes);
+  const selectedDate = useFlowiStore((s) => s.selectedDate);
+  const addTodo = useFlowiStore((s) => s.addTodo);
+  const completeTodo = useFlowiStore((s) => s.completeTodo);
+  const deleteTodo = useFlowiStore((s) => s.deleteTodo);
+  const addNote = useFlowiStore((s) => s.addNote);
+  const deleteNote = useFlowiStore((s) => s.deleteNote);
+  const setSelectedDate = useFlowiStore((s) => s.setSelectedDate);
   const today = getToday();
 
   const [newText, setNewText] = useState('');
@@ -94,102 +97,103 @@ export default function TachesScreen() {
             </TouchableOpacity>
           </View>
 
-          <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
-            {/* Add todo */}
-            <View style={styles.addSection}>
-              <TextInput
-                style={styles.addInput}
-                value={newText}
-                onChangeText={setNewText}
-                placeholder="+ Nouvelle tâche..."
-                placeholderTextColor={colors.muted}
-                returnKeyType="done"
-                onSubmitEditing={handleAddTodo}
-              />
-              <View style={styles.prioRow}>
-                {PRIORITIES.map((p) => (
-                  <TouchableOpacity
-                    key={p.key}
-                    style={[styles.prioPill, newPrio === p.key && { backgroundColor: colors[p.key], borderColor: colors[p.key] }]}
-                    onPress={() => setNewPrio(p.key)}
-                  >
-                    <Text style={[styles.prioPillText, newPrio === p.key && { color: '#fff' }]}>
-                      {p.label}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
+          <FlatList
+            data={[...pendingTodos, ...doneTodos]}
+            keyExtractor={(item) => item.id}
+            keyboardShouldPersistTaps="handled"
+            contentContainerStyle={styles.scroll}
+            ListHeaderComponent={
+              <View style={styles.addSection}>
+                <TextInput
+                  style={styles.addInput}
+                  value={newText}
+                  onChangeText={setNewText}
+                  placeholder="+ Nouvelle tâche..."
+                  placeholderTextColor={colors.muted}
+                  returnKeyType="done"
+                  onSubmitEditing={handleAddTodo}
+                />
+                <View style={styles.prioRow}>
+                  {PRIORITIES.map((p) => (
+                    <TouchableOpacity
+                      key={p.key}
+                      style={[styles.prioPill, newPrio === p.key && { backgroundColor: colors[p.key], borderColor: colors[p.key] }]}
+                      onPress={() => setNewPrio(p.key)}
+                    >
+                      <Text style={[styles.prioPillText, newPrio === p.key && { color: '#fff' }]}>
+                        {p.label}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
               </View>
-            </View>
-
-            {/* Pending */}
-            {pendingTodos.map((todo) => (
-              <Animated.View key={todo.id} entering={FadeIn.duration(200)} style={styles.todoCard}>
-                <TouchableOpacity
-                  style={styles.checkbox}
-                  onPress={() => { completeTodo(todo.id); Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); }}
-                >
-                  <View style={[styles.checkInner, { borderColor: colors[todo.priority] }]} />
-                </TouchableOpacity>
-                <Text style={styles.todoText} numberOfLines={2}>{todo.text}</Text>
-                <TouchableOpacity onPress={() => deleteTodo(todo.id)}>
-                  <Text style={styles.deleteBtn}>✕</Text>
-                </TouchableOpacity>
-              </Animated.View>
-            ))}
-
-            {pendingTodos.length === 0 && (
+            }
+            renderItem={({ item: todo }) =>
+              todo.done ? (
+                <View style={[styles.todoCard, styles.todoCardDone]}>
+                  <View style={styles.checkboxDone}>
+                    <Text style={styles.checkmark}>✓</Text>
+                  </View>
+                  <Text style={styles.todoTextDone} numberOfLines={1}>{todo.text}</Text>
+                </View>
+              ) : (
+                <Animated.View entering={FadeIn.duration(200)} style={styles.todoCard}>
+                  <TouchableOpacity
+                    style={styles.checkbox}
+                    onPress={() => { completeTodo(todo.id); Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); }}
+                  >
+                    <View style={[styles.checkInner, { borderColor: colors[todo.priority] }]} />
+                  </TouchableOpacity>
+                  <Text style={styles.todoText} numberOfLines={2}>{todo.text}</Text>
+                  <TouchableOpacity onPress={() => deleteTodo(todo.id)}>
+                    <Text style={styles.deleteBtn}>✕</Text>
+                  </TouchableOpacity>
+                </Animated.View>
+              )
+            }
+            ListEmptyComponent={
               <Text style={styles.empty}>
                 {viewDate === today ? 'Aucune tâche pour aujourd\'hui' : 'Aucune tâche ce jour'}
               </Text>
-            )}
-
-            {/* Done */}
-            {doneTodos.length > 0 && (
-              <>
-                <Text style={styles.doneHeader}>Complétées ({doneTodos.length})</Text>
-                {doneTodos.map((todo) => (
-                  <View key={todo.id} style={[styles.todoCard, styles.todoCardDone]}>
-                    <View style={styles.checkboxDone}>
-                      <Text style={styles.checkmark}>✓</Text>
-                    </View>
-                    <Text style={styles.todoTextDone} numberOfLines={1}>{todo.text}</Text>
-                  </View>
-                ))}
-              </>
-            )}
-          </ScrollView>
+            }
+          />
         </KeyboardAvoidingView>
       ) : (
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
           style={{ flex: 1 }}
         >
-          <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
-            <View style={styles.addSection}>
-              <TextInput
-                style={[styles.addInput, { minHeight: 80, textAlignVertical: 'top' }]}
-                value={newNoteText}
-                onChangeText={setNewNoteText}
-                placeholder="Écrire une note..."
-                placeholderTextColor={colors.muted}
-                multiline
-              />
-              {newNoteText.trim().length > 0 && (
-                <TouchableOpacity
-                  style={styles.addBtn}
-                  onPress={() => {
-                    addNote(newNoteText.trim());
-                    setNewNoteText('');
-                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                  }}
-                >
-                  <Text style={styles.addBtnText}>Ajouter</Text>
-                </TouchableOpacity>
-              )}
-            </View>
-
-            {notes.slice().reverse().map((note) => (
-              <Animated.View key={note.id} entering={FadeIn.duration(200)} style={styles.noteCard}>
+          <FlatList
+            data={notes.slice().reverse()}
+            keyExtractor={(item) => item.id}
+            keyboardShouldPersistTaps="handled"
+            contentContainerStyle={styles.scroll}
+            ListHeaderComponent={
+              <View style={styles.addSection}>
+                <TextInput
+                  style={[styles.addInput, { minHeight: 80, textAlignVertical: 'top' }]}
+                  value={newNoteText}
+                  onChangeText={setNewNoteText}
+                  placeholder="Écrire une note..."
+                  placeholderTextColor={colors.muted}
+                  multiline
+                />
+                {newNoteText.trim().length > 0 && (
+                  <TouchableOpacity
+                    style={styles.addBtn}
+                    onPress={() => {
+                      addNote(newNoteText.trim());
+                      setNewNoteText('');
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    }}
+                  >
+                    <Text style={styles.addBtnText}>Ajouter</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            }
+            renderItem={({ item: note }) => (
+              <Animated.View entering={FadeIn.duration(200)} style={styles.noteCard}>
                 <Text style={styles.noteDate}>{note.date}</Text>
                 <Text style={styles.noteText}>{note.text}</Text>
                 <TouchableOpacity
@@ -199,8 +203,8 @@ export default function TachesScreen() {
                   <Text style={styles.deleteBtn}>✕</Text>
                 </TouchableOpacity>
               </Animated.View>
-            ))}
-          </ScrollView>
+            )}
+          />
         </KeyboardAvoidingView>
       )}
     </SafeAreaView>

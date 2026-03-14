@@ -30,7 +30,10 @@ const OBJECTIF_OPTIONS = [
 
 export default function OnboardingScreen() {
   const router = useRouter();
-  const { setOnboarded, setUserName, setUserTdah, setUserObjectif } = useFlowiStore();
+  const setOnboarded = useFlowiStore((s) => s.setOnboarded);
+  const setUserName = useFlowiStore((s) => s.setUserName);
+  const setUserTdah = useFlowiStore((s) => s.setUserTdah);
+  const setUserObjectif = useFlowiStore((s) => s.setUserObjectif);
   const [step, setStep] = useState(0);
   const [name, setName] = useState('');
   const [tdah, setTdah] = useState('');

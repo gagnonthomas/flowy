@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import {
-  View, Text, StyleSheet, ScrollView, TextInput,
+  View, Text, StyleSheet, FlatList, TextInput,
   TouchableOpacity, KeyboardAvoidingView, Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -13,19 +13,21 @@ type SubTab = 'coach' | 'xp';
 
 export default function FlowiScreen() {
   const [subTab, setSubTab] = useState<SubTab>('coach');
-  const {
-    coachMessages, addCoachMessage,
-    xp, xpLog, badges,
-  } = useFlowiStore();
+  const coachMessages = useFlowiStore((s) => s.coachMessages);
+  const addCoachMessage = useFlowiStore((s) => s.addCoachMessage);
+  const xp = useFlowiStore((s) => s.xp);
+  const xpLog = useFlowiStore((s) => s.xpLog);
+  const badges = useFlowiStore((s) => s.badges);
 
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
-  const scrollRef = useRef<ScrollView>(null);
+  const scrollRef = useRef<FlatList>(null);
   const level = getLevel(xp);
   const { current, needed } = getXpForNextLevel(xp);
 
   useEffect(() => {
     scrollRef.current?.scrollToEnd({ animated: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [coachMessages]);
 
   const sendMessage = async () => {
@@ -71,14 +73,15 @@ export default function FlowiScreen() {
           style={{ flex: 1 }}
           keyboardVerticalOffset={90}
         >
-          <ScrollView
+          <FlatList
             ref={scrollRef}
+            data={coachMessages}
+            keyExtractor={(_, i) => String(i)}
             contentContainerStyle={styles.chatScroll}
             keyboardShouldPersistTaps="handled"
-          >
-            {coachMessages.map((msg, i) => (
+            onContentSizeChange={() => scrollRef.current?.scrollToEnd({ animated: true })}
+            renderItem={({ item: msg }) => (
               <Animated.View
-                key={i}
                 entering={FadeIn.duration(200)}
                 style={[
                   styles.bubble,
@@ -92,13 +95,13 @@ export default function FlowiScreen() {
                   {msg.text}
                 </Text>
               </Animated.View>
-            ))}
-            {loading && (
+            )}
+            ListFooterComponent={loading ? (
               <View style={[styles.bubble, styles.assistantBubble]}>
                 <Text style={styles.assistantText}>...</Text>
               </View>
-            )}
-          </ScrollView>
+            ) : null}
+          />
 
           <View style={styles.inputBar}>
             <TextInput
@@ -121,43 +124,48 @@ export default function FlowiScreen() {
           </View>
         </KeyboardAvoidingView>
       ) : (
-        <ScrollView contentContainerStyle={styles.xpScroll}>
-          <Animated.View entering={FadeIn.duration(400)} style={styles.xpCard}>
-            <Text style={styles.xpLevelText}>Niveau {level}</Text>
-            <Text style={styles.xpTotal}>{xp} XP</Text>
-            <View style={styles.xpBarBg}>
-              <View style={[styles.xpBarFill, { width: `${Math.min(100, (current / needed) * 100)}%` }]} />
-            </View>
-            <Text style={styles.xpProgress}>{current} / {needed} pour le prochain niveau</Text>
-          </Animated.View>
+        <FlatList
+          data={xpLog.slice(-20).reverse()}
+          keyExtractor={(_, i) => String(i)}
+          contentContainerStyle={styles.xpScroll}
+          ListHeaderComponent={
+            <>
+              <Animated.View entering={FadeIn.duration(400)} style={styles.xpCard}>
+                <Text style={styles.xpLevelText}>Niveau {level}</Text>
+                <Text style={styles.xpTotal}>{xp} XP</Text>
+                <View style={styles.xpBarBg}>
+                  <View style={[styles.xpBarFill, { width: `${Math.min(100, (current / needed) * 100)}%` }]} />
+                </View>
+                <Text style={styles.xpProgress}>{current} / {needed} pour le prochain niveau</Text>
+              </Animated.View>
 
-          {badges.length > 0 && (
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Badges</Text>
-              <View style={styles.badgesGrid}>
-                {badges.map((b) => (
-                  <View key={b.id} style={styles.badgeCard}>
-                    <Text style={styles.badgeIcon}>{b.icon}</Text>
-                    <Text style={styles.badgeLabel}>{b.label}</Text>
+              {badges.length > 0 && (
+                <View style={styles.section}>
+                  <Text style={styles.sectionTitle}>Badges</Text>
+                  <View style={styles.badgesGrid}>
+                    {badges.map((b) => (
+                      <View key={b.id} style={styles.badgeCard}>
+                        <Text style={styles.badgeIcon}>{b.icon}</Text>
+                        <Text style={styles.badgeLabel}>{b.label}</Text>
+                      </View>
+                    ))}
                   </View>
-                ))}
-              </View>
+                </View>
+              )}
+
+              <Text style={[styles.sectionTitle, { marginBottom: 10 }]}>Historique XP</Text>
+            </>
+          }
+          renderItem={({ item: entry }) => (
+            <View style={styles.xpRow}>
+              <Text style={styles.xpReason}>{entry.reason}</Text>
+              <Text style={styles.xpAmount}>+{entry.amount}</Text>
             </View>
           )}
-
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Historique XP</Text>
-            {xpLog.slice(-20).reverse().map((entry, i) => (
-              <View key={i} style={styles.xpRow}>
-                <Text style={styles.xpReason}>{entry.reason}</Text>
-                <Text style={styles.xpAmount}>+{entry.amount}</Text>
-              </View>
-            ))}
-            {xpLog.length === 0 && (
-              <Text style={styles.empty}>Commence à gagner de l'XP en complétant des tâches !</Text>
-            )}
-          </View>
-        </ScrollView>
+          ListEmptyComponent={
+            <Text style={styles.empty}>Commence à gagner de l'XP en complétant des tâches !</Text>
+          }
+        />
       )}
     </SafeAreaView>
   );

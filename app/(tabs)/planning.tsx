@@ -13,7 +13,8 @@ type SubTab = 'semaine' | 'calendrier' | 'bilan';
 
 export default function PlanningScreen() {
   const [subTab, setSubTab] = useState<SubTab>('semaine');
-  const { events, todos } = useFlowiStore();
+  const events = useFlowiStore((s) => s.events);
+  const todos = useFlowiStore((s) => s.todos);
   const today = getToday();
 
   // Week view: current week Mon-Sun

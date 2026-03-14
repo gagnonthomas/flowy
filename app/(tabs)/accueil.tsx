@@ -7,7 +7,11 @@ import { colors } from '@/constants/colors';
 import { getToday, MONTHS_FR, formatDate } from '@/utils/date';
 
 export default function AccueilScreen() {
-  const { userName, todos, events, habits, xp, energyLog, selectedDate } = useFlowiStore();
+  const userName = useFlowiStore((s) => s.userName);
+  const todos = useFlowiStore((s) => s.todos);
+  const events = useFlowiStore((s) => s.events);
+  const habits = useFlowiStore((s) => s.habits);
+  const xp = useFlowiStore((s) => s.xp);
   const today = getToday();
   const level = getLevel(xp);
   const { current, needed } = getXpForNextLevel(xp);
