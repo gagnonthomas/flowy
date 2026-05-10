@@ -28,6 +28,11 @@ yarn-error.*
 *.p8
 *.p12
 
+# Cloudflare Worker (worker/)
+worker/.dev.vars
+worker/.wrangler/
+worker/worker-configuration.d.ts
+
 # TypeScript
 *.tsbuildinfo
 

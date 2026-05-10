@@ -5,8 +5,8 @@ import * as ImagePicker from 'expo-image-picker';
 import * as Haptics from 'expo-haptics';
 import { showToast } from './Toast';
 
-const API_URL = 'https://api.anthropic.com/v1/messages';
-const API_KEY = process.env.EXPO_PUBLIC_ANTHROPIC_API_KEY || '';
+const API_URL = `${process.env.EXPO_PUBLIC_FLOWI_API_URL || ''}/v1/messages`;
+const API_KEY = process.env.EXPO_PUBLIC_FLOWI_KEY || '';
 
 const PROMPTS: Record<string, string> = {
   todos: "Photo of a handwritten task list. Extract each task. Reply ONLY with JSON array: [{\"text\":\"task\"}]. Nothing else.",
@@ -58,8 +58,8 @@ export function ScanModal({ visible, target, onClose, onImport }: Props) {
   };
 
   const analyzeImage = async (base64: string, mimeType: string) => {
-    if (!API_KEY) {
-      setError('Clé API manquante.');
+    if (!API_KEY || !process.env.EXPO_PUBLIC_FLOWI_API_URL) {
+      setError('Configuration API manquante.');
       setPhase('preview');
       return;
     }
@@ -71,11 +71,10 @@ export function ScanModal({ visible, target, onClose, onImport }: Props) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-api-key': API_KEY,
-          'anthropic-version': '2023-06-01',
+          'X-Flowi-Key': API_KEY,
         },
         body: JSON.stringify({
-          model: 'claude-sonnet-4-5',
+          model: 'claude-sonnet-4-6',
           max_tokens: 800,
           messages: [{
             role: 'user',

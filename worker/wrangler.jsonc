@@ -1,0 +1,13 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "flowi-api",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-04-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": {
+    "enabled": true
+  }
+  // Secrets (do NOT put values here — set via `wrangler secret put`):
+  //   ANTHROPIC_API_KEY  — your sk-ant-... key
+  //   FLOWI_API_KEY      — shared secret the mobile app sends as X-Flowi-Key
+}

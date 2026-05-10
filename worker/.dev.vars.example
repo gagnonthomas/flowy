@@ -1,0 +1,9 @@
+# Copy to `.dev.vars` (gitignored) for local `wrangler dev`.
+# In production, set via `wrangler secret put <NAME>`.
+
+# Real Anthropic API key — kept server-side only.
+ANTHROPIC_API_KEY=sk-ant-...
+
+# Shared secret the mobile app sends as the X-Flowi-Key header.
+# Generate with: openssl rand -hex 32
+FLOWI_API_KEY=replace-with-a-long-random-string

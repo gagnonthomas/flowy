@@ -1,15 +1,14 @@
 /**
- * Anthropic API — appel direct comme dans le prototype web.
+ * Appels Anthropic via le Cloudflare Worker `worker/` — la vraie clé
+ * sk-ant-... reste côté serveur.
  *
- * Pour le dev : mettre ta clé dans .env.local :
- *   EXPO_PUBLIC_ANTHROPIC_API_KEY=sk-ant-...
- *
- * Pour la production : migrer vers un Cloudflare Worker
- * qui garde la clé côté serveur.
+ * Configurer dans `.env.local` :
+ *   EXPO_PUBLIC_FLOWI_API_URL=https://flowi-api.<account>.workers.dev
+ *   EXPO_PUBLIC_FLOWI_KEY=<même valeur que FLOWI_API_KEY dans le Worker>
  */
 
-const API_URL = 'https://api.anthropic.com/v1/messages';
-const API_KEY = process.env.EXPO_PUBLIC_ANTHROPIC_API_KEY || '';
+const API_URL = `${process.env.EXPO_PUBLIC_FLOWI_API_URL || ''}/v1/messages`;
+const API_KEY = process.env.EXPO_PUBLIC_FLOWI_KEY || '';
 
 interface ApiMessage {
   role: 'user' | 'assistant';
@@ -25,10 +24,10 @@ async function callAnthropic(
   messages: ApiMessage[],
   options: { system?: string; maxTokens?: number; model?: string } = {}
 ): Promise<ApiResponse> {
-  const { system, maxTokens = 600, model = 'claude-sonnet-4-5' } = options;
+  const { system, maxTokens = 600, model = 'claude-sonnet-4-6' } = options;
 
-  if (!API_KEY) {
-    return { text: '', error: 'Clé API manquante. Ajoute EXPO_PUBLIC_ANTHROPIC_API_KEY dans .env.local' };
+  if (!API_KEY || !process.env.EXPO_PUBLIC_FLOWI_API_URL) {
+    return { text: '', error: 'Configuration manquante. Ajoute EXPO_PUBLIC_FLOWI_API_URL et EXPO_PUBLIC_FLOWI_KEY dans .env.local' };
   }
 
   try {
@@ -43,8 +42,7 @@ async function callAnthropic(
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': API_KEY,
-        'anthropic-version': '2023-06-01',
+        'X-Flowi-Key': API_KEY,
       },
       body: JSON.stringify(body),
     });
@@ -68,7 +66,7 @@ export async function sendCoachMessage(history: ApiMessage[]): Promise<string> {
   const system = `Tu es Flowi, le coach personnel de l'utilisateur dans l'application Flowi. Tu es chaleureux, bienveillant et spécialisé en productivité, organisation et bien-être mental — avec une expertise pour les cerveaux qui fonctionnent différemment. Tu tutoies toujours l'utilisateur. Tu parles avec naturel, comme un ami de confiance qui s'y connaît. Tes réponses sont courtes et ciblées — jamais de pavés, jamais de listes à n points. Tu vas à l'essentiel. Avant de conseiller, tu reconnais l'état de la personne. Si elle est épuisée, tu adaptes. Si elle est dans le flow, tu amplifies. Tu célèbres les petites victoires sans exagérer. Tu ne juges jamais. Tu sais que la productivité n'est pas une question de volonté, chaque cerveau fonctionne à sa façon. Tu proposes toujours des actions concrètes, micro, réalisables maintenant. Quand tu reçois des données (énergie, tâches, humeur, sommeil), tu les utilises pour personnaliser ta réponse sans les lister mécaniquement. Maximum 150 mots. Écris toujours en français.`;
 
   const { text, error } = await callAnthropic(history, { system, maxTokens: 600 });
-  return text || (error ? `Désolé, je n'arrive pas à me connecter. ${error.includes('Clé API') ? error : 'Réessaie dans un moment !'}` : '');
+  return text || (error ? `Désolé, je n'arrive pas à me connecter. ${error.includes('Configuration') ? error : 'Réessaie dans un moment !'}` : '');
 }
 
 // ── Pensée du jour (oracle) ──
