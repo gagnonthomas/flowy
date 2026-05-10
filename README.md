@@ -1,4 +1,4 @@
-# Flowy
+# Flowi
 
 Application mobile iOS construite avec React Native et Expo.
 
@@ -94,9 +94,9 @@ npx eas credentials --platform ios
 Ensuite, enregistrer l'app dans App Store Connect :
 1. Aller sur https://appstoreconnect.apple.com
 2. Creer une nouvelle app avec :
-   - **Bundle ID :** `com.flowy.app`
-   - **Nom :** Flowy
-   - **SKU :** `flowy001`
+   - **Bundle ID :** `com.flowi.app`
+   - **Nom :** Flowi
+   - **SKU :** `flowi001`
 
 Enfin, declencher le premier build en pushant sur `main` ou via l'onglet Actions de GitHub.
 

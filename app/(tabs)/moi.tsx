@@ -1,17 +1,31 @@
 import { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, Text, StyleSheet, ScrollView, Pressable, TextInput } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import { useFlowiStore } from '@/store';
 import { BreathingTimer } from '@/components/ui/BreathingTimer';
 import { MeditationTimer } from '@/components/ui/MeditationTimer';
+import { SwipeTask } from '@/components/ui/SwipeTask';
 import { colors } from '@/constants/colors';
 import { getToday, getEnergySlot } from '@/utils/date';
+import { useSubTabSwipe } from '@/hooks/useSubTabSwipe';
+import { GestureDetector } from 'react-native-gesture-handler';
+import { AnimatedSubTab } from '@/components/ui/AnimatedSubTab';
+import { StaggeredItem } from '@/components/ui/StaggeredItem';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { useTheme } from '@/hooks/useTheme';
+import { useDarkOverrides } from '@/hooks/useDarkOverrides';
+
+const pad = (n: number) => String(n).padStart(2, '0');
+const mo = colors.moi;
+
+const ENERGY_LEVELS: [string, string, number][] = [
+  ['🪫', 'Épuisé', 1], ['⚡', 'Faible', 2], ['🔋', 'Moyen', 3], ['🔥', 'Élevé', 4], ['💥', 'Maximum', 5],
+];
+const WORKOUT_TYPES = ['🏃 Course', '🚴 Vélo', '💪 Muscu', '🧘 Yoga', '🏊 Natation', '🚶 Marche', '⚽ Sport', '🤸 Stretching'];
+const DEFI_DURATIONS = [7, 14, 21, 30, 66, 100];
 
 type SubTab = 'sante' | 'respiration' | 'meditation' | 'defis';
-
-const ENERGY_LABELS = ['😫', '😕', '😐', '🙂', '😄'];
 
 export default function MoiScreen() {
   const [subTab, setSubTab] = useState<SubTab>('sante');
@@ -21,212 +35,454 @@ export default function MoiScreen() {
   const setWater = useFlowiStore((s) => s.setWater);
   const habits = useFlowiStore((s) => s.habits);
   const toggleHabit = useFlowiStore((s) => s.toggleHabit);
+  const deleteHabit = useFlowiStore((s) => s.deleteHabit);
+  const addHabit = useFlowiStore((s) => s.addHabit);
   const defis = useFlowiStore((s) => s.defis);
   const addDefi = useFlowiStore((s) => s.addDefi);
   const toggleDefiDay = useFlowiStore((s) => s.toggleDefiDay);
   const deleteDefi = useFlowiStore((s) => s.deleteDefi);
+  const workouts = useFlowiStore((s) => s.workouts);
+  const addWorkout = useFlowiStore((s) => s.addWorkout);
+  const { t } = useTheme();
+  const d = useDarkOverrides();
+  const TABS = ['sante', 'respiration', 'meditation', 'defis'] as const;
+  const tabSwipe = useSubTabSwipe(TABS, subTab, setSubTab as any);
   const today = getToday();
   const slot = getEnergySlot();
   const energyKey = `${today}-${slot}`;
-
-  const [newDefiText, setNewDefiText] = useState('');
-
+  const currentEnergy = energyLog[energyKey] || 0;
   const waterToday = waterLog[today] || 0;
+  const todayWorkouts = workouts.filter((w) => w.date === today);
+
+  const [newHabitText, setNewHabitText] = useState('');
+  const [newGratitude, setNewGratitude] = useState('');
+  const storeGratitude = useFlowiStore((s) => s.gratitude);
+  const addGratitude = useFlowiStore((s) => s.addGratitude);
+  const removeGratitude = useFlowiStore((s) => s.removeGratitude);
+  const gratitudeList = storeGratitude[today] || [];
+  const [newDefiText, setNewDefiText] = useState('');
+  const [newDefiDays, setNewDefiDays] = useState(30);
+  const [workoutType, setWorkoutType] = useState('');
+  const [workoutDur, setWorkoutDur] = useState('');
+
+  const dateLabel = new Date(today + 'T12:00:00').toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Moi</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.tabScroll}>
-          <View style={styles.tabs}>
-            {(['sante', 'respiration', 'meditation', 'defis'] as const).map((t) => (
-              <TouchableOpacity
-                key={t}
-                style={[styles.tab, subTab === t && styles.tabActive]}
-                onPress={() => setSubTab(t)}
-              >
-                <Text style={[styles.tabText, subTab === t && styles.tabTextActive]}>
-                  {t === 'sante' ? 'Santé' : t === 'respiration' ? 'Respiration' : t === 'meditation' ? 'Méditation' : 'Défis'}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </ScrollView>
-      </View>
+    <View style={{ flex: 1, backgroundColor: t.screenBg }}>
+      {/* Sub-tabs */}
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={s.tabScroll} contentContainerStyle={s.tabBar}>
+        {(['sante', 'respiration', 'meditation', 'defis'] as const).map((t) => (
+          <Pressable key={t} onPress={() => setSubTab(t)} style={[s.tab, d.tab, subTab === t && s.tabActive]}>
+            <Text style={[s.tabText, subTab === t && s.tabTextActive]}>
+              {t === 'sante' ? 'Santé' : t === 'respiration' ? 'Respiration' : t === 'meditation' ? 'Méditation' : 'Défis'}
+            </Text>
+          </Pressable>
+        ))}
+      </ScrollView>
 
-      <ScrollView contentContainerStyle={styles.scroll}>
+      <GestureDetector gesture={tabSwipe}>
+      <ScrollView contentContainerStyle={s.scroll} showsVerticalScrollIndicator={false}>
+
+        {/* ═══ SANTÉ ═══ */}
         {subTab === 'sante' && (
-          <Animated.View entering={FadeIn.duration(300)} style={styles.content}>
-            {/* Energy check-in */}
-            <View style={styles.card}>
-              <Text style={styles.cardTitle}>Énergie ({slot})</Text>
-              <View style={styles.energyRow}>
-                {ENERGY_LABELS.map((emoji, i) => {
-                  const val = i + 1;
-                  const selected = energyLog[energyKey] === val;
-                  return (
-                    <TouchableOpacity
-                      key={i}
-                      style={[styles.energyBtn, selected && styles.energyBtnActive]}
-                      onPress={() => { setEnergy(energyKey, val); setEnergy(today, val); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); }}
-                    >
-                      <Text style={styles.energyEmoji}>{emoji}</Text>
-                    </TouchableOpacity>
-                  );
-                })}
-              </View>
-            </View>
-
-            {/* Water */}
-            <View style={styles.card}>
-              <Text style={styles.cardTitle}>Hydratation</Text>
-              <View style={styles.waterRow}>
-                {[1, 2, 3, 4, 5, 6, 7, 8].map((n) => (
-                  <TouchableOpacity
-                    key={n}
-                    onPress={() => { setWater(today, n); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); }}
-                  >
-                    <Text style={[styles.waterDrop, n <= waterToday && styles.waterDropFull]}>
-                      💧
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-              <Text style={styles.waterCount}>{waterToday} / 8 verres</Text>
-            </View>
-
-            {/* Habits */}
-            <View style={styles.card}>
-              <Text style={styles.cardTitle}>Habitudes</Text>
-              {habits.map((h) => {
-                const done = h.done[today];
+          <AnimatedSubTab key="sante">
+            {/* Énergie */}
+            <Text style={s.sectionLabel}>Niveau d'énergie</Text>
+            <View style={s.energyRow}>
+              {ENERGY_LEVELS.map(([emoji, label, val]) => {
+                const sel = currentEnergy === val;
                 return (
-                  <TouchableOpacity
-                    key={h.id}
-                    style={styles.habitRow}
-                    onPress={() => { toggleHabit(h.id, today); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); }}
+                  <Pressable
+                    key={val}
+                    onPress={() => { setEnergy(energyKey, val); setEnergy(today, val); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); }}
+                    style={[s.energyBtn, { borderColor: sel ? mo.accent : '#E8EDF5', backgroundColor: sel ? mo.light : '#F8FAFF' }]}
                   >
-                    <Text style={styles.habitIcon}>{h.icon}</Text>
-                    <Text style={[styles.habitLabel, done && styles.habitDone]}>{h.label}</Text>
-                    <View style={[styles.habitCheck, done && styles.habitCheckDone]}>
-                      {done && <Text style={styles.habitCheckmark}>✓</Text>}
-                    </View>
-                  </TouchableOpacity>
+                    <Text style={{ fontSize: 18 }}>{emoji}</Text>
+                    <Text style={[s.energyLabel, { color: sel ? mo.text : '#8090B0' }]}>{label}</Text>
+                  </Pressable>
                 );
               })}
             </View>
-          </Animated.View>
-        )}
 
-        {subTab === 'respiration' && (
-          <Animated.View entering={FadeIn.duration(300)} style={styles.content}>
-            <BreathingTimer />
-          </Animated.View>
-        )}
+            <View style={s.divider} />
 
-        {subTab === 'meditation' && (
-          <Animated.View entering={FadeIn.duration(300)} style={styles.content}>
-            <MeditationTimer />
-          </Animated.View>
-        )}
-
-        {subTab === 'defis' && (
-          <Animated.View entering={FadeIn.duration(300)} style={styles.content}>
-            <View style={styles.addRow}>
+            {/* Habitudes */}
+            <Text style={s.sectionLabel}>Habitudes du {dateLabel}</Text>
+            {habits.map((h) => {
+              const done = h.done[today];
+              return (
+                <SwipeTask key={h.id} onComplete={done ? undefined : () => toggleHabit(h.id, today)} onDelete={() => deleteHabit(h.id)}>
+                  <Pressable
+                    onPress={() => { toggleHabit(h.id, today); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); }}
+                    style={[s.habitRow, { backgroundColor: done ? mo.light : '#F8FAFF', borderColor: done ? mo.border : '#E8EDF5' }]}
+                  >
+                    <Text style={{ fontSize: 20 }}>{h.icon}</Text>
+                    <Text style={[s.habitLabel, { color: done ? mo.text : '#3D4A6A', textDecorationLine: done ? 'line-through' : 'none' }]}>{h.label}</Text>
+                    <View style={[s.habitCheck, done && { backgroundColor: mo.accent, borderColor: mo.accent }]}>
+                      {done && <Text style={s.habitCheckMark}>✓</Text>}
+                    </View>
+                  </Pressable>
+                </SwipeTask>
+              );
+            })}
+            <View style={s.addRow}>
               <TextInput
-                style={styles.addInput}
+                style={s.addInput}
+                value={newHabitText}
+                onChangeText={setNewHabitText}
+                placeholder="Ajouter une habitude..."
+                placeholderTextColor="#B0B8C8"
+                returnKeyType="done"
+                onSubmitEditing={() => { if (newHabitText.trim()) { addHabit(newHabitText.trim(), '⭐'); setNewHabitText(''); } }}
+              />
+              <Pressable onPress={() => { if (newHabitText.trim()) { addHabit(newHabitText.trim(), '⭐'); setNewHabitText(''); } }} style={s.addBtn}>
+                <Text style={s.addBtnText}>+</Text>
+              </Pressable>
+            </View>
+
+            <View style={s.divider} />
+
+            {/* Gratitude */}
+            <Text style={s.sectionLabel}>Gratitude du jour</Text>
+            <View style={s.addRow}>
+              <TextInput
+                style={s.addInput}
+                value={newGratitude}
+                onChangeText={setNewGratitude}
+                placeholder="Je suis reconnaissant(e) pour..."
+                placeholderTextColor="#B0B8C8"
+                returnKeyType="done"
+                onSubmitEditing={() => { if (newGratitude.trim()) { addGratitude(today, newGratitude.trim()); setNewGratitude(''); } }}
+              />
+              <Pressable onPress={() => { if (newGratitude.trim()) { addGratitude(today, newGratitude.trim()); setNewGratitude(''); } }} style={s.addBtn}>
+                <Text style={s.addBtnText}>+</Text>
+              </Pressable>
+            </View>
+            {gratitudeList.map((g, i) => (
+              <View key={i} style={s.gratitudeRow}>
+                <Text style={{ fontSize: 14, marginTop: 1 }}>🙏</Text>
+                <Text style={s.gratitudeText}>{g}</Text>
+                <Pressable onPress={() => removeGratitude(today, i)}>
+                  <Text style={{ fontSize: 14, color: '#CCC' }}>×</Text>
+                </Pressable>
+              </View>
+            ))}
+
+            <View style={s.divider} />
+
+            {/* Hydratation */}
+            <Text style={s.sectionLabel}>Hydratation</Text>
+            <View style={s.waterRow}>
+              {[1, 2, 3, 4, 5, 6, 7, 8].map((n) => {
+                const filled = waterToday >= n;
+                return (
+                  <Pressable
+                    key={n}
+                    onPress={() => { setWater(today, n); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); }}
+                    style={[s.waterBtn, { borderColor: filled ? '#29B6F6' : '#E8EDF5', backgroundColor: filled ? '#E1F5FE' : '#F8FAFF' }]}
+                  >
+                    <Text style={{ fontSize: 15 }}>💧</Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+            <Text style={s.waterCount}>{waterToday} / 8 verres</Text>
+
+            <View style={s.divider} />
+
+            {/* Séance du jour */}
+            <Text style={s.sectionLabel}>Séance du jour</Text>
+            <View style={s.workoutTypes}>
+              {WORKOUT_TYPES.map((t) => {
+                const sel = workoutType === t;
+                return (
+                  <Pressable key={t} onPress={() => setWorkoutType(sel ? '' : t)} style={[s.workoutPill, { borderColor: sel ? mo.accent : '#E8EDF5', backgroundColor: sel ? mo.light : '#F8FAFF' }]}>
+                    <Text style={[s.workoutPillText, { color: sel ? mo.text : '#6070A0' }]}>{t}</Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+            <View style={s.addRow}>
+              <TextInput
+                style={[s.addInput, { flex: 1 }]}
+                value={workoutDur}
+                onChangeText={setWorkoutDur}
+                placeholder="Durée (min)"
+                placeholderTextColor="#B0B8C8"
+                keyboardType="numeric"
+              />
+              <Pressable
+                onPress={() => {
+                  if (!workoutType || !workoutDur) return;
+                  addWorkout(workoutType, workoutDur);
+                  setWorkoutType('');
+                  setWorkoutDur('');
+                  Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+                }}
+                style={s.workoutAddBtn}
+              >
+                <Text style={s.addBtnText}>+ Ajouter</Text>
+              </Pressable>
+            </View>
+            {todayWorkouts.map((w) => (
+              <View key={w.id} style={s.workoutRow}>
+                <Text style={{ fontSize: 15 }}>{w.type.split(' ')[0]}</Text>
+                <Text style={s.workoutLabel}>{w.type.slice(w.type.indexOf(' ') + 1)}</Text>
+                <Text style={s.workoutDur}>{w.dur} min</Text>
+              </View>
+            ))}
+          </AnimatedSubTab>
+        )}
+
+        {/* ═══ RESPIRATION ═══ */}
+        {subTab === 'respiration' && (
+          <AnimatedSubTab>
+            <BreathingTimer />
+          </AnimatedSubTab>
+        )}
+
+        {/* ═══ MÉDITATION ═══ */}
+        {subTab === 'meditation' && (
+          <AnimatedSubTab>
+            <MeditationTimer />
+          </AnimatedSubTab>
+        )}
+
+        {/* ═══ DÉFIS ═══ */}
+        {subTab === 'defis' && (
+          <AnimatedSubTab>
+            <Text style={s.sectionLabel}>Nouveau défi</Text>
+            <View style={s.defiAddCard}>
+              <TextInput
+                style={s.defiInput}
                 value={newDefiText}
                 onChangeText={setNewDefiText}
-                placeholder="Nouveau défi (ex: 30 jours sans sucre)"
-                placeholderTextColor={colors.muted}
-                returnKeyType="done"
-                onSubmitEditing={() => {
+                placeholder="Ex: 30 jours sans réseaux sociaux..."
+                placeholderTextColor="#B0B8C8"
+              />
+              <Text style={s.defiDurLabel}>Durée :</Text>
+              <View style={s.defiDurRow}>
+                {DEFI_DURATIONS.map((d) => {
+                  const sel = newDefiDays === d;
+                  return (
+                    <Pressable key={d} onPress={() => setNewDefiDays(d)} style={[s.defiDurBtn, { borderColor: sel ? mo.accent : '#E8EDF5', backgroundColor: sel ? mo.accent : '#F8FAFF' }]}>
+                      <Text style={[s.defiDurText, { color: sel ? '#FFFFFF' : '#6070A0' }]}>{d}j</Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+              <Pressable
+                onPress={() => {
                   if (newDefiText.trim()) {
-                    addDefi(newDefiText.trim(), 30);
+                    addDefi(newDefiText.trim(), newDefiDays);
                     setNewDefiText('');
                     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
                   }
                 }}
-              />
+                style={s.defiLaunchBtn}
+              >
+                <Text style={s.defiLaunchText}>Lancer le défi 🎯</Text>
+              </Pressable>
             </View>
-            {defis.map((defi) => {
-              const daysCompleted = Object.values(defi.log).filter(Boolean).length;
+
+            {defis.length === 0 && (
+              <EmptyState
+                emoji="🎯"
+                title="Lance ton premier défi !"
+                subtitle="Choisis un objectif et tiens bon. Chaque jour compte."
+                floatingEmojis={['🔥', '💪', '🏆']}
+              />
+            )}
+
+            {defis.map((defi, di) => {
+              const streak = Object.values(defi.log).filter(Boolean).length;
+              const pct = Math.min(100, Math.round((streak / defi.days) * 100));
+              const badge = pct >= 100 ? '🏆' : pct >= 75 ? '🥇' : pct >= 50 ? '🥈' : pct >= 25 ? '🥉' : '🎯';
+              const doneToday = defi.log[today];
+              const startDate = defi.startDate;
               return (
-                <View key={defi.id} style={styles.defiCard}>
-                  <View style={styles.defiHeader}>
-                    <Text style={styles.defiLabel}>{defi.label}</Text>
-                    <TouchableOpacity onPress={() => deleteDefi(defi.id)}>
-                      <Text style={styles.deleteBtn}>✕</Text>
-                    </TouchableOpacity>
-                  </View>
-                  <View style={styles.defiProgress}>
-                    <View style={styles.defiBarBg}>
-                      <View style={[styles.defiBarFill, { width: `${(daysCompleted / defi.days) * 100}%` }]} />
+                <StaggeredItem key={defi.id} index={di}>
+                <View style={[s.defiCard, { backgroundColor: doneToday ? mo.light : '#F8FAFF', borderColor: doneToday ? mo.border : '#E8EDF5' }]}>
+                  {/* Header */}
+                  <View style={s.defiHeader}>
+                    <Text style={{ fontSize: 20 }}>{badge}</Text>
+                    <Text style={s.defiTitle}>{defi.label}</Text>
+                    <View style={s.defiBadge}>
+                      <Text style={s.defiBadgeText}>{streak}/{defi.days}j</Text>
                     </View>
-                    <Text style={styles.defiCount}>{daysCompleted}/{defi.days}</Text>
+                    <Pressable onPress={() => deleteDefi(defi.id)}>
+                      <Text style={{ fontSize: 15, color: '#CCC' }}>×</Text>
+                    </Pressable>
                   </View>
-                  <TouchableOpacity
-                    style={[styles.defiTodayBtn, defi.log[today] && styles.defiTodayDone]}
-                    onPress={() => { toggleDefiDay(defi.id, today); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); }}
+                  {/* Progress bar */}
+                  <View style={s.defiBarBg}>
+                    <View style={[s.defiBarFill, { width: `${pct}%`, backgroundColor: pct >= 100 ? '#F59E0B' : mo.accent }]} />
+                  </View>
+                  <Text style={s.defiPctText}>
+                    {pct}% — Commence le {new Date(startDate + 'T12:00:00').toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}
+                  </Text>
+                  {/* Day grid */}
+                  <View style={s.defiGrid}>
+                    {Array.from({ length: Math.min(defi.days, 30) }).map((_, i) => {
+                      const dt = new Date(startDate + 'T12:00:00');
+                      dt.setDate(dt.getDate() + i);
+                      const ds = `${dt.getFullYear()}-${pad(dt.getMonth() + 1)}-${pad(dt.getDate())}`;
+                      const isDone = defi.log[ds];
+                      const isToday2 = ds === today;
+                      return (
+                        <Pressable
+                          key={i}
+                          onPress={() => { toggleDefiDay(defi.id, ds); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); }}
+                          style={[s.defiDayCell, { backgroundColor: isDone ? mo.accent : '#E8EDF5' }, isToday2 && { borderWidth: 2, borderColor: mo.text }]}
+                        />
+                      );
+                    })}
+                  </View>
+                  {/* Today button */}
+                  <Pressable
+                    onPress={() => { toggleDefiDay(defi.id, today); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); }}
+                    style={[s.defiTodayBtn, { backgroundColor: doneToday ? '#F0F4FF' : mo.accent }]}
                   >
-                    <Text style={styles.defiTodayText}>
-                      {defi.log[today] ? '✓ Fait aujourd\'hui' : 'Marquer aujourd\'hui'}
+                    <Text style={[s.defiTodayText, { color: doneToday ? mo.text : '#FFFFFF' }]}>
+                      {doneToday ? "✓ Fait aujourd'hui" : "Marquer comme fait aujourd'hui"}
                     </Text>
-                  </TouchableOpacity>
+                  </Pressable>
                 </View>
+                </StaggeredItem>
               );
             })}
-            {defis.length === 0 && (
-              <Text style={styles.empty}>Aucun défi en cours. Lance-toi !</Text>
-            )}
-          </Animated.View>
+          </AnimatedSubTab>
         )}
       </ScrollView>
-    </SafeAreaView>
+      </GestureDetector>
+    </View>
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.bg },
-  header: { paddingHorizontal: 20, paddingTop: 12 },
-  title: { fontSize: 24, fontFamily: 'Inter_700Bold', color: colors.text, marginBottom: 12 },
-  tabScroll: { marginBottom: 8 },
-  tabs: { flexDirection: 'row', gap: 8 },
-  tab: { paddingVertical: 8, paddingHorizontal: 14, borderRadius: 20, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border },
-  tabActive: { backgroundColor: colors.moi.light, borderColor: colors.moi.accent },
-  tabText: { fontSize: 13, fontFamily: 'Inter_400Regular', color: colors.muted },
-  tabTextActive: { fontFamily: 'Inter_600SemiBold', color: colors.moi.accent },
-  scroll: { paddingBottom: 40 },
-  content: { padding: 20, gap: 12 },
-  card: { backgroundColor: colors.surface, borderRadius: 14, padding: 16, borderWidth: 1, borderColor: colors.border },
-  cardTitle: { fontSize: 15, fontFamily: 'Inter_600SemiBold', color: colors.text, marginBottom: 12 },
-  energyRow: { flexDirection: 'row', justifyContent: 'space-around' },
-  energyBtn: { width: 52, height: 52, borderRadius: 26, backgroundColor: colors.bg, alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: 'transparent' },
-  energyBtnActive: { borderColor: colors.moi.accent, backgroundColor: colors.moi.light },
-  energyEmoji: { fontSize: 28 },
-  waterRow: { flexDirection: 'row', justifyContent: 'space-around', marginBottom: 8 },
-  waterDrop: { fontSize: 24, opacity: 0.3 },
-  waterDropFull: { opacity: 1 },
-  waterCount: { fontSize: 13, fontFamily: 'Inter_400Regular', color: colors.muted, textAlign: 'center' },
-  habitRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: colors.border },
-  habitIcon: { fontSize: 20 },
-  habitLabel: { flex: 1, fontSize: 15, fontFamily: 'Inter_400Regular', color: colors.text },
-  habitDone: { textDecorationLine: 'line-through', color: colors.muted },
-  habitCheck: { width: 24, height: 24, borderRadius: 12, borderWidth: 2, borderColor: colors.border, alignItems: 'center', justifyContent: 'center' },
-  habitCheckDone: { backgroundColor: colors.moi.accent, borderColor: colors.moi.accent },
-  habitCheckmark: { color: '#fff', fontSize: 14, fontWeight: '700' },
-  addRow: { marginBottom: 12 },
-  addInput: { borderWidth: 1, borderColor: colors.border, borderRadius: 12, padding: 14, fontSize: 15, fontFamily: 'Inter_400Regular', color: colors.text, backgroundColor: colors.surface },
-  defiCard: { backgroundColor: colors.surface, borderRadius: 14, padding: 16, borderWidth: 1, borderColor: colors.border },
-  defiHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  defiLabel: { fontSize: 15, fontFamily: 'Inter_600SemiBold', color: colors.text },
-  deleteBtn: { fontSize: 16, color: colors.muted, padding: 4 },
-  defiProgress: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 10 },
-  defiBarBg: { flex: 1, height: 6, backgroundColor: colors.border, borderRadius: 3 },
-  defiBarFill: { height: 6, backgroundColor: colors.moi.accent, borderRadius: 3 },
-  defiCount: { fontSize: 12, fontFamily: 'Inter_600SemiBold', color: colors.muted },
-  defiTodayBtn: { marginTop: 10, paddingVertical: 8, borderRadius: 8, backgroundColor: colors.moi.light, alignItems: 'center' },
-  defiTodayDone: { backgroundColor: colors.moi.accent },
-  defiTodayText: { fontSize: 13, fontFamily: 'Inter_600SemiBold', color: colors.moi.accent },
-  empty: { fontSize: 14, fontFamily: 'Inter_400Regular', color: colors.muted, fontStyle: 'italic', textAlign: 'center', marginTop: 20 },
+const s = StyleSheet.create({
+  tabScroll: { flexGrow: 0, flexShrink: 0 },
+  tabBar: { flexDirection: 'row', gap: 6, paddingHorizontal: 12, paddingTop: 10, paddingBottom: 6 },
+  tab: { paddingVertical: 10, paddingHorizontal: 20, borderRadius: 12, backgroundColor: '#FAFBFF', borderWidth: 1.5, borderColor: '#E8EDF5' },
+  tabActive: { backgroundColor: mo.light, borderColor: mo.accent },
+  tabText: { fontFamily: 'Inter_400Regular', fontSize: 14, color: '#9CA3AF' },
+  tabTextActive: { fontFamily: 'Inter_700Bold', color: mo.accent },
+
+  scroll: { paddingHorizontal: 14, paddingBottom: 40, gap: 0 },
+
+  sectionLabel: {
+    fontFamily: 'Inter_700Bold', fontSize: 10, color: '#B0A090',
+    textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 8, marginTop: 2,
+  },
+  divider: { height: 1, backgroundColor: '#E8EDF5', marginVertical: 12 },
+
+  // Energy
+  energyRow: { flexDirection: 'row', gap: 5, marginBottom: 10 },
+  energyBtn: {
+    flex: 1, paddingVertical: 8, paddingHorizontal: 3, borderRadius: 10,
+    borderWidth: 2, alignItems: 'center', gap: 2,
+  },
+  energyLabel: { fontFamily: 'Inter_700Bold', fontSize: 9, lineHeight: 11 },
+
+  // Habits
+  habitRow: {
+    flexDirection: 'row', alignItems: 'center', gap: 10,
+    paddingVertical: 9, paddingHorizontal: 12, marginBottom: 5,
+    borderRadius: 12, borderWidth: 1.5,
+  },
+  habitLabel: { fontFamily: 'Inter_700Bold', fontSize: 14, flex: 1 },
+  habitCheck: {
+    width: 22, height: 22, borderRadius: 6, borderWidth: 2,
+    borderColor: '#D0D8EA', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+  },
+  habitCheckMark: { color: '#FFFFFF', fontSize: 12, fontWeight: '800' },
+
+  // Add row (shared)
+  addRow: { flexDirection: 'row', gap: 6, marginTop: 8, marginBottom: 4 },
+  addInput: {
+    flex: 1, borderWidth: 1.5, borderColor: '#E8EDF5', borderRadius: 9,
+    paddingVertical: 6, paddingHorizontal: 10, fontSize: 13,
+    fontFamily: 'Inter_400Regular', backgroundColor: '#FFFFFF', color: colors.text,
+  },
+  addBtn: {
+    paddingVertical: 6, paddingHorizontal: 12, borderRadius: 9,
+    backgroundColor: mo.accent, alignItems: 'center', justifyContent: 'center',
+  },
+  addBtnText: { color: '#FFFFFF', fontSize: 13, fontWeight: '700' },
+
+  // Gratitude
+  gratitudeRow: {
+    flexDirection: 'row', gap: 8, alignItems: 'flex-start',
+    paddingVertical: 6, paddingHorizontal: 10, marginBottom: 4,
+    borderRadius: 9, backgroundColor: mo.light, borderWidth: 1.5, borderColor: mo.border,
+  },
+  gratitudeText: { fontFamily: 'Inter_400Regular', fontSize: 13, color: mo.text, flex: 1, lineHeight: 18 },
+
+  // Water
+  waterRow: { flexDirection: 'row', gap: 4, marginBottom: 5 },
+  waterBtn: {
+    flex: 1, height: 34, borderRadius: 9, borderWidth: 2,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  waterCount: { fontFamily: 'Inter_700Bold', fontSize: 12, color: '#29B6F6', textAlign: 'center' },
+
+  // Workout
+  workoutTypes: { flexDirection: 'row', gap: 5, flexWrap: 'wrap', marginBottom: 8 },
+  workoutPill: {
+    paddingVertical: 4, paddingHorizontal: 10, borderRadius: 16,
+    borderWidth: 1.5,
+  },
+  workoutPillText: { fontFamily: 'Inter_700Bold', fontSize: 11 },
+  workoutAddBtn: {
+    paddingVertical: 6, paddingHorizontal: 14, borderRadius: 9,
+    backgroundColor: mo.accent, alignItems: 'center', justifyContent: 'center',
+  },
+  workoutRow: {
+    flexDirection: 'row', alignItems: 'center', gap: 8,
+    paddingVertical: 5, paddingHorizontal: 10, marginBottom: 3,
+    borderRadius: 9, backgroundColor: mo.light, borderWidth: 1.5, borderColor: mo.border,
+  },
+  workoutLabel: { fontFamily: 'Inter_700Bold', fontSize: 13, color: mo.text, flex: 1 },
+  workoutDur: { fontFamily: 'Inter_700Bold', fontSize: 12, color: mo.accent },
+
+  // Défis
+  defiAddCard: {
+    padding: 10, paddingHorizontal: 12, borderRadius: 14,
+    backgroundColor: mo.light, borderWidth: 1.5, borderColor: mo.border, marginBottom: 12,
+  },
+  defiInput: {
+    borderWidth: 1.5, borderColor: '#E8EDF5', borderRadius: 9,
+    paddingVertical: 7, paddingHorizontal: 10, fontSize: 13,
+    fontFamily: 'Inter_400Regular', backgroundColor: '#FFFFFF', color: colors.text, marginBottom: 8,
+  },
+  defiDurLabel: { fontFamily: 'Inter_700Bold', fontSize: 11, color: '#8090B0', marginBottom: 6 },
+  defiDurRow: { flexDirection: 'row', gap: 5, marginBottom: 8 },
+  defiDurBtn: {
+    flex: 1, paddingVertical: 5, paddingHorizontal: 2, borderRadius: 9,
+    borderWidth: 1.5, alignItems: 'center',
+  },
+  defiDurText: { fontFamily: 'Inter_700Bold', fontSize: 11 },
+  defiLaunchBtn: {
+    width: '100%', paddingVertical: 8, borderRadius: 9,
+    backgroundColor: mo.accent, alignItems: 'center',
+  },
+  defiLaunchText: { fontFamily: 'Inter_700Bold', fontSize: 13, color: '#FFFFFF' },
+  emptyText: { fontFamily: 'Inter_400Regular', fontSize: 14, color: '#C8D0E0', textAlign: 'center', paddingTop: 10 },
+
+  defiCard: {
+    marginBottom: 12, padding: 12, paddingHorizontal: 14,
+    borderRadius: 14, borderWidth: 1.5,
+  },
+  defiHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 6 },
+  defiTitle: { fontFamily: 'Inter_700Bold', fontSize: 14, color: mo.text, flex: 1 },
+  defiBadge: {
+    backgroundColor: mo.light, paddingVertical: 2, paddingHorizontal: 8, borderRadius: 8,
+  },
+  defiBadgeText: { fontFamily: 'Inter_700Bold', fontSize: 11, color: mo.accent },
+  defiBarBg: { height: 8, backgroundColor: '#E8EDF5', borderRadius: 4, marginBottom: 6, overflow: 'hidden' },
+  defiBarFill: { height: '100%', borderRadius: 4 },
+  defiPctText: { fontFamily: 'Inter_400Regular', fontSize: 11, color: '#8090B0', marginBottom: 8 },
+  defiGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 2, marginBottom: 8 },
+  defiDayCell: { width: '9.5%', aspectRatio: 1, borderRadius: 3 },
+  defiTodayBtn: { width: '100%', paddingVertical: 9, borderRadius: 10, alignItems: 'center' },
+  defiTodayText: { fontFamily: 'Inter_700Bold', fontSize: 13 },
 });

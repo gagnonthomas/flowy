@@ -4,9 +4,11 @@ import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getToday } from '@/utils/date';
 import { generateId } from '@/utils/id';
+import { showToast } from '@/components/ui/Toast';
+import { trackFeature, trackAction } from '@/utils/analytics';
 import type {
   Todo, Event, Habit, Note, Routine, Defi, Workout,
-  CoachMessage, XpLogEntry, Badge,
+  CoachMessage, XpLogEntry, Badge, Goal,
   EnergyLog, SleepLog, WaterLog, WeightLog,
 } from '@/types';
 
@@ -57,6 +59,7 @@ interface FlowiState {
   completeTodo: (id: string) => void;
   deleteTodo: (id: string) => void;
   updateTodo: (id: string, updates: Partial<Todo>) => void;
+  reorderTodos: (todos: Todo[]) => void;
   rolloverTodos: () => void;
 
   // Events
@@ -116,9 +119,39 @@ interface FlowiState {
   earnXp: (amount: number, reason: string) => void;
   addBadge: (label: string, icon: string) => void;
 
+  // Goals (semaine / mois)
+  weekGoals: Goal[];
+  addWeekGoal: (text: string) => void;
+  toggleWeekGoal: (id: string) => void;
+  deleteWeekGoal: (id: string) => void;
+  monthGoals: Goal[];
+  addMonthGoal: (text: string) => void;
+  toggleMonthGoal: (id: string) => void;
+  deleteMonthGoal: (id: string) => void;
+
+  // Persisted user data (priorities, rappels, gratitude, reviews)
+  dayPrios: Record<string, [string, string, string]>;
+  setDayPrios: (date: string, prios: [string, string, string]) => void;
+  rappels: Record<string, string[]>;
+  setRappels: (date: string, rappels: string[]) => void;
+  gratitude: Record<string, string[]>;
+  addGratitude: (date: string, text: string) => void;
+  removeGratitude: (date: string, index: number) => void;
+  weekReview: Record<string, string>;
+  setWeekReview: (weekKey: string, text: string) => void;
+  monthReview: Record<string, { wins: string; improve: string; focus: string }>;
+  setMonthReview: (monthKey: string, field: 'wins' | 'improve' | 'focus', text: string) => void;
+  agendaNotes: Record<string, string>;
+  setAgendaNote: (date: string, text: string) => void;
+
   // Settings
   darkMode: boolean;
   toggleDarkMode: () => void;
+
+  // Navigation flags
+  quickRoutineRequested: boolean;
+  notesRequested: boolean;
+  xpRequested: boolean;
 
   // Selected date
   selectedDate: string;
@@ -159,6 +192,8 @@ export const useFlowiStore = create<FlowiState>()(
         const todo = state.todos.find((t) => t.id === id);
         if (todo && !todo.done) {
           state.earnXp(5, `Tâche: ${todo.text.slice(0, 30)}`);
+          showToast(`Tâche complétée ! +5 XP`, 'success');
+          trackAction('complete_todo');
         }
         set((s) => ({
           todos: s.todos.map((t) =>
@@ -170,6 +205,7 @@ export const useFlowiStore = create<FlowiState>()(
       updateTodo: (id, updates) => set((s) => ({
         todos: s.todos.map((t) => t.id === id ? { ...t, ...updates } : t),
       })),
+      reorderTodos: (todos) => set({ todos }),
       rolloverTodos: () => {
         const today = getToday();
         set((s) => ({
@@ -209,6 +245,8 @@ export const useFlowiStore = create<FlowiState>()(
         const habit = state.habits.find((h) => h.id === id);
         if (habit && !habit.done[date]) {
           state.earnXp(3, `Habitude: ${habit.label}`);
+          showToast(`${habit.icon} ${habit.label} — +3 XP`, 'success');
+          trackAction('complete_habit');
         }
         set((s) => ({
           habits: s.habits.map((h) => {
@@ -329,9 +367,65 @@ export const useFlowiStore = create<FlowiState>()(
         badges: [...s.badges, { id: generateId(), label, icon, date: getToday() }],
       })),
 
+      // Goals
+      weekGoals: [],
+      addWeekGoal: (text) => set((s) => ({
+        weekGoals: [...s.weekGoals, { id: generateId(), text, done: false }],
+      })),
+      toggleWeekGoal: (id) => set((s) => ({
+        weekGoals: s.weekGoals.map((g) => g.id === id ? { ...g, done: !g.done } : g),
+      })),
+      deleteWeekGoal: (id) => set((s) => ({
+        weekGoals: s.weekGoals.filter((g) => g.id !== id),
+      })),
+      monthGoals: [],
+      addMonthGoal: (text) => set((s) => ({
+        monthGoals: [...s.monthGoals, { id: generateId(), text, done: false }],
+      })),
+      toggleMonthGoal: (id) => set((s) => ({
+        monthGoals: s.monthGoals.map((g) => g.id === id ? { ...g, done: !g.done } : g),
+      })),
+      deleteMonthGoal: (id) => set((s) => ({
+        monthGoals: s.monthGoals.filter((g) => g.id !== id),
+      })),
+
+      // Persisted user data
+      dayPrios: {},
+      setDayPrios: (date, prios) => set((s) => ({
+        dayPrios: { ...s.dayPrios, [date]: prios },
+      })),
+      rappels: {},
+      setRappels: (date, rappels) => set((s) => ({
+        rappels: { ...s.rappels, [date]: rappels },
+      })),
+      gratitude: {},
+      addGratitude: (date, text) => set((s) => ({
+        gratitude: { ...s.gratitude, [date]: [...(s.gratitude[date] || []), text] },
+      })),
+      removeGratitude: (date, index) => set((s) => ({
+        gratitude: { ...s.gratitude, [date]: (s.gratitude[date] || []).filter((_, i) => i !== index) },
+      })),
+      weekReview: {},
+      setWeekReview: (weekKey, text) => set((s) => ({
+        weekReview: { ...s.weekReview, [weekKey]: text },
+      })),
+      monthReview: {},
+      setMonthReview: (monthKey, field, text) => set((s) => ({
+        monthReview: { ...s.monthReview, [monthKey]: { ...(s.monthReview[monthKey] || { wins: '', improve: '', focus: '' }), [field]: text } },
+      })),
+      agendaNotes: {},
+      setAgendaNote: (date, text) => set((s) => ({
+        agendaNotes: { ...s.agendaNotes, [date]: text },
+      })),
+
       // Settings
       darkMode: false,
       toggleDarkMode: () => set((s) => ({ darkMode: !s.darkMode })),
+
+      // Navigation flags
+      quickRoutineRequested: false,
+      notesRequested: false,
+      xpRequested: false,
 
       // Selected date
       selectedDate: getToday(),

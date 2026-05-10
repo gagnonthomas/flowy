@@ -1,317 +1,620 @@
 import { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Modal } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { useRouter } from 'expo-router';
 import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
+import * as Haptics from 'expo-haptics';
 import { useFlowiStore } from '@/store';
 import { getLevel, getXpForNextLevel } from '@/store';
 import { colors } from '@/constants/colors';
-import { getToday, MONTHS_FR, formatDate } from '@/utils/date';
+import { getToday, getTomorrow } from '@/utils/date';
+import { BadDayModal } from '@/components/ui/BadDayModal';
+import { showToast } from '@/components/ui/Toast';
+import { useTheme } from '@/hooks/useTheme';
+import { useDarkOverrides } from '@/hooks/useDarkOverrides';
+
+const XP_LEVELS = [
+  { lvl: 1, label: 'Débutant', min: 0, emoji: '🌱' },
+  { lvl: 2, label: 'Curieux', min: 50, emoji: '🌿' },
+  { lvl: 3, label: 'Régulier', min: 150, emoji: '⚡' },
+  { lvl: 4, label: 'Motivé', min: 300, emoji: '🔥' },
+  { lvl: 5, label: 'Focalisé', min: 500, emoji: '🎯' },
+  { lvl: 6, label: 'Champion', min: 800, emoji: '💪' },
+  { lvl: 7, label: 'Expert', min: 1200, emoji: '🧠' },
+  { lvl: 8, label: 'Maître', min: 1800, emoji: '💎' },
+  { lvl: 9, label: 'Légende', min: 2500, emoji: '🌟' },
+  { lvl: 10, label: 'Flow Master', min: 3500, emoji: '🏆' },
+];
+
+function getLevelData(xp: number) {
+  const cur = [...XP_LEVELS].reverse().find((l) => xp >= l.min) || XP_LEVELS[0];
+  const next = XP_LEVELS[cur.lvl] || null;
+  const pct = next ? Math.min(100, Math.round(((xp - cur.min) / (next.min - cur.min)) * 100)) : 100;
+  return { cur, next, pct };
+}
 
 export default function AccueilScreen() {
+  const [badDayVisible, setBadDayVisible] = useState(false);
+  const { t } = useTheme();
+  const d = useDarkOverrides();
+  const router = useRouter();
   const userName = useFlowiStore((s) => s.userName);
+  const updateTodo = useFlowiStore((s) => s.updateTodo);
   const todos = useFlowiStore((s) => s.todos);
   const events = useFlowiStore((s) => s.events);
   const habits = useFlowiStore((s) => s.habits);
+  const routines = useFlowiStore((s) => s.routines);
+  const routineLog = useFlowiStore((s) => s.routineLog);
   const xp = useFlowiStore((s) => s.xp);
   const today = getToday();
-  const level = getLevel(xp);
-  const { current, needed } = getXpForNextLevel(xp);
 
-  const todayTodos = todos.filter((t) => t.scheduledDate === today && !t.done);
-  const todayEvents = events.filter((e) => e.date === today && !e.done);
-  const todayHabits = habits.filter((h) => !h.done[today]);
-  const completedToday = todos.filter((t) => t.doneDate === today).length;
+  const nowH = new Date().getHours();
+  const greeting = nowH < 6 ? 'Bonne nuit 🌙' : nowH < 12 ? 'Bonjour ☀️' : nowH < 18 ? 'Bon après-midi 🌤' : nowH < 21 ? 'Bonne soirée 🌆' : 'Bonsoir 🌙';
 
-  const darkMode = useFlowiStore((s) => s.darkMode);
-  const toggleDarkMode = useFlowiStore((s) => s.toggleDarkMode);
-  const userTdah = useFlowiStore((s) => s.userTdah);
-  const userObjectif = useFlowiStore((s) => s.userObjectif);
-  const [settingsOpen, setSettingsOpen] = useState(false);
+  const doneTodayCount = todos.filter((t) => t.done && t.doneDate === today).length;
+  const pendingCount = todos.filter((t) => !t.done).length;
+  const habDoneToday = habits.filter((h) => h.done && h.done[today]).length;
 
-  const d = new Date();
-  const greeting = d.getHours() < 12 ? 'Bonjour' : d.getHours() < 18 ? 'Bon après-midi' : 'Bonsoir';
+  // Best streak
+  let bestStreak = 0;
+  routines.forEach((r) => {
+    let s = 0;
+    const d = new Date();
+    while (true) {
+      const ds = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      if (routineLog[`${r.id}-${ds}`]) { s++; d.setDate(d.getDate() - 1); } else break;
+    }
+    if (s > bestStreak) bestStreak = s;
+  });
+
+  // Voix Flowi
+  const voixMsgs = [
+    nowH < 10 ? 'Un jour de plus pour avancer à ton rythme. 🌿' : null,
+    nowH >= 10 && nowH < 14 && doneTodayCount > 0 ? 'Tu avances bien. Continue comme ça. ✨' : null,
+    nowH >= 14 && nowH < 18 && pendingCount > 3 ? "L'après-midi est encore là. Une tâche à la fois. 🎯" : null,
+    nowH >= 18 ? 'La journée tire à sa fin. Ce que tu as fait compte. 🌙' : null,
+    bestStreak >= 5 ? `${bestStreak} jours de streak — la constance, c'est du courage. 🔥` : null,
+    habDoneToday >= 3 ? `${habDoneToday} habitudes cochées aujourd'hui. Ça s'accumule. 💚` : null,
+  ].filter(Boolean);
+  const voixMsg = voixMsgs[0] || null;
+
+  // Upcoming events (2 weeks)
+  const twoWeeksDate = (() => { const d = new Date(); d.setDate(d.getDate() + 14); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; })();
+  const upcomingEvts = events
+    .filter((e) => e.date >= today && e.date <= twoWeeksDate)
+    .sort((a, b) => (a.date < b.date ? -1 : 1))
+    .slice(0, 3);
+
+  // Today's priorities (jourPrios not in store yet, skip for now)
+  const { cur: curLvl, next: nextLvl, pct: xpPct } = getLevelData(xp);
+
+  const dateLabel = new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+
+  const CAT_COLORS: Record<string, string> = { rdv: '#3B82F6', sante: '#10B981', perso: '#8B5CF6', famille: '#F59E0B', tache: '#6B7280' };
+
+  const navigateTo = (tab: string) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    router.replace(`/(tabs)/${tab}` as any);
+  };
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-        <Animated.View entering={FadeIn.duration(500)}>
-          <View style={styles.greetingRow}>
-            <View>
-              <Text style={styles.greeting}>{greeting},</Text>
-              <Text style={styles.name}>{userName || 'ami'} 🌿</Text>
-            </View>
-            <TouchableOpacity style={styles.settingsBtn} onPress={() => setSettingsOpen(true)}>
-              <Text style={styles.settingsIcon}>⚙️</Text>
-            </TouchableOpacity>
-          </View>
-        </Animated.View>
+    <>
+    <BadDayModal visible={badDayVisible} onClose={() => setBadDayVisible(false)} />
+    <ScrollView style={[styles.container, { backgroundColor: t.screenBg }]} contentContainerStyle={[styles.scroll]} showsVerticalScrollIndicator={false}>
 
-        <Animated.View entering={FadeInDown.delay(150).duration(400)} style={styles.card}>
-          <View style={styles.xpRow}>
-            <Text style={styles.xpLevel}>Niveau {level}</Text>
-            <Text style={styles.xpAmount}>{xp} XP</Text>
-          </View>
-          <View style={styles.xpBarBg}>
-            <View style={[styles.xpBarFill, { width: `${Math.min(100, (current / needed) * 100)}%` }]} />
-          </View>
-        </Animated.View>
+      {/* ── SALUTATION ── */}
+      <Animated.View entering={FadeIn.duration(500)}>
+        <LinearGradient
+          colors={['#3730A3', '#6D28D9', '#7C3AED']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.greetingBanner}
+        >
+          {/* Decorative circles */}
+          <View style={[styles.decorCircle, { width: 120, height: 120, right: -20, top: -20, opacity: 0.05 }]} />
+          <View style={[styles.decorCircle, { width: 80, height: 80, right: 30, bottom: -40, opacity: 0.04 }]} />
+          <View style={[styles.decorCircle, { width: 60, height: 60, left: -10, bottom: -20, opacity: 0.03 }]} />
 
-        <Animated.View entering={FadeInDown.delay(300).duration(400)} style={styles.statsRow}>
-          <View style={[styles.statCard, { backgroundColor: colors.agenda.light }]}>
-            <Text style={styles.statNum}>{todayTodos.length}</Text>
-            <Text style={styles.statLabel}>tâches</Text>
-          </View>
-          <View style={[styles.statCard, { backgroundColor: colors.focus.light }]}>
-            <Text style={styles.statNum}>{todayEvents.length}</Text>
-            <Text style={styles.statLabel}>RDV</Text>
-          </View>
-          <View style={[styles.statCard, { backgroundColor: colors.moi.light }]}>
-            <Text style={styles.statNum}>{todayHabits.length}</Text>
-            <Text style={styles.statLabel}>habitudes</Text>
-          </View>
-          <View style={[styles.statCard, { backgroundColor: colors.todos.light }]}>
-            <Text style={styles.statNum}>{completedToday}</Text>
-            <Text style={styles.statLabel}>faites</Text>
-          </View>
-        </Animated.View>
+          <Text style={styles.dateLabel}>{dateLabel}</Text>
+          <Text style={styles.greetingText}>{greeting}</Text>
 
-        {todayTodos.length > 0 && (
-          <Animated.View entering={FadeInDown.delay(450).duration(400)} style={styles.section}>
-            <Text style={styles.sectionTitle}>A faire aujourd'hui</Text>
-            {todayTodos.slice(0, 5).map((todo) => (
-              <View key={todo.id} style={styles.todoRow}>
-                <View style={[styles.prioDot, { backgroundColor: colors[todo.priority] }]} />
-                <Text style={styles.todoText} numberOfLines={1}>{todo.text}</Text>
+          {voixMsg && (
+            <Text style={styles.voixFlowi}>{voixMsg}</Text>
+          )}
+
+          {/* Stats row */}
+          <View style={styles.bannerStats}>
+            {[
+              { val: String(doneTodayCount), label: 'fait aujourd\'hui', icon: '✅' },
+              { val: String(pendingCount), label: 'en attente', icon: '📋' },
+              { val: bestStreak > 0 ? `${bestStreak}j` : '—', label: 'streak', icon: '🔥' },
+            ].map((s, i) => (
+              <View key={i} style={styles.bannerStatCard}>
+                <Text style={styles.bannerStatVal}>{s.val}</Text>
+                <Text style={styles.bannerStatLabel}>{s.icon} {s.label}</Text>
               </View>
             ))}
-            {todayTodos.length > 5 && (
-              <Text style={styles.moreText}>+{todayTodos.length - 5} autres</Text>
-            )}
-          </Animated.View>
-        )}
+          </View>
+        </LinearGradient>
+      </Animated.View>
 
-        {todayEvents.length > 0 && (
-          <Animated.View entering={FadeInDown.delay(600).duration(400)} style={styles.section}>
-            <Text style={styles.sectionTitle}>Rendez-vous</Text>
-            {todayEvents.map((ev) => (
-              <View key={ev.id} style={styles.eventRow}>
-                <Text style={styles.eventTime}>{ev.time || '--:--'}</Text>
-                <Text style={styles.eventTitle} numberOfLines={1}>{ev.title}</Text>
+      {/* ── OUTILS DE SECOURS ── */}
+      <Animated.View entering={FadeInDown.delay(100).duration(400)}>
+        <Text style={[styles.sectionHeader, d.textMuted]}>Outils de secours</Text>
+        <View style={styles.secoursGrid}>
+          <Pressable onPress={() => setBadDayVisible(true)} style={{ flex: 1 }}>
+            <LinearGradient colors={['#1E1B4B', '#3730A3']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.secoursCard}>
+              <Text style={{ fontSize: 26 }}>🌿</Text>
+              <View>
+                <Text style={styles.secoursTitle}>Mode urgence</Text>
+                <Text style={styles.secoursDesc}>Journée difficile ? Une chose à la fois.</Text>
               </View>
-            ))}
-          </Animated.View>
-        )}
-      </ScrollView>
-
-      {/* Settings Modal */}
-      <Modal visible={settingsOpen} transparent animationType="slide">
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalSheet}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Paramètres</Text>
-              <TouchableOpacity onPress={() => setSettingsOpen(false)}>
-                <Text style={styles.modalClose}>✕</Text>
-              </TouchableOpacity>
-            </View>
-
-            <View style={styles.settingsSection}>
-              <Text style={styles.settingsSectionTitle}>Profil</Text>
-              <View style={styles.settingsRow}>
-                <Text style={styles.settingsLabel}>Nom</Text>
-                <Text style={styles.settingsValue}>{userName || '—'}</Text>
+            </LinearGradient>
+          </Pressable>
+          <Pressable onPress={() => { useFlowiStore.setState({ quickRoutineRequested: true }); navigateTo('aujourdhui'); }} style={{ flex: 1 }}>
+            <LinearGradient colors={['#92400E', '#D97706']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.secoursCard}>
+              <Text style={{ fontSize: 26 }}>⚡</Text>
+              <View>
+                <Text style={styles.secoursTitle}>Routine 5 min</Text>
+                <Text style={styles.secoursDesc}>Respirer, cibler, agir. C'est tout.</Text>
               </View>
-              <View style={styles.settingsRow}>
-                <Text style={styles.settingsLabel}>TDAH</Text>
-                <Text style={styles.settingsValue}>{userTdah || '—'}</Text>
+            </LinearGradient>
+          </Pressable>
+        </View>
+        <View style={[styles.secoursGrid, { marginTop: 8 }]}>
+          <Pressable onPress={() => { useFlowiStore.setState({ notesRequested: true }); navigateTo('taches'); }} style={{ flex: 1 }}>
+            <LinearGradient colors={['#312E81', '#6D28D9']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.secoursCard}>
+              <Text style={{ fontSize: 26 }}>🌫️</Text>
+              <View>
+                <Text style={styles.secoursTitle}>Vide-cerveau</Text>
+                <Text style={styles.secoursDesc}>Dépose tout. Sans ordre. Sans pression.</Text>
               </View>
-              <View style={styles.settingsRow}>
-                <Text style={styles.settingsLabel}>Objectif</Text>
-                <Text style={[styles.settingsValue, { maxWidth: '60%', textAlign: 'right' }]}>{userObjectif || '—'}</Text>
+            </LinearGradient>
+          </Pressable>
+          <Pressable onPress={() => {
+            const tomorrow = getTomorrow();
+            const todayTodos = todos.filter((t) => t.scheduledDate === today && !t.done);
+            todayTodos.forEach((t) => updateTodo(t.id, { scheduledDate: tomorrow, rolledOver: false }));
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+            showToast(`${todayTodos.length} tâche${todayTodos.length > 1 ? 's' : ''} reportée${todayTodos.length > 1 ? 's' : ''} à demain 🌙`, 'info');
+          }} style={{ flex: 1 }}>
+            <LinearGradient colors={['#1F2937', '#374151']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.secoursCard}>
+              <Text style={{ fontSize: 26 }}>🌙</Text>
+              <View>
+                <Text style={styles.secoursTitle}>Pas aujourd'hui</Text>
+                <Text style={styles.secoursDesc}>Reporter sans culpabilité. C'est correct.</Text>
               </View>
-            </View>
+            </LinearGradient>
+          </Pressable>
+        </View>
+      </Animated.View>
 
-            <View style={styles.settingsSection}>
-              <Text style={styles.settingsSectionTitle}>Apparence</Text>
-              <TouchableOpacity style={styles.settingsRow} onPress={toggleDarkMode}>
-                <Text style={styles.settingsLabel}>Mode sombre</Text>
-                <Text style={styles.settingsValue}>{darkMode ? 'Activé' : 'Désactivé'}</Text>
-              </TouchableOpacity>
+      {/* ── XP + NIVEAU ── */}
+      <Pressable onPress={() => { useFlowiStore.setState({ xpRequested: true }); navigateTo('flowi'); }}>
+      <Animated.View entering={FadeInDown.delay(200).duration(400)} style={[styles.xpCard, d.card]}>
+        <View style={styles.xpRow}>
+          <Text style={{ fontSize: 32 }}>{curLvl.emoji}</Text>
+          <View style={{ flex: 1 }}>
+            <View style={styles.xpHeader}>
+              <Text style={styles.xpLevelLabel}>{curLvl.label}</Text>
+              <Text style={styles.xpAmount}>{xp}<Text style={styles.xpUnit}> XP</Text></Text>
             </View>
-
-            <View style={styles.settingsSection}>
-              <Text style={styles.settingsSectionTitle}>Données</Text>
-              <TouchableOpacity
-                style={styles.settingsRow}
-                onPress={() => {
-                  Alert.alert(
-                    'Effacer les données',
-                    'Toutes tes données Flowi seront supprimées. Cette action est irréversible.',
-                    [
-                      { text: 'Annuler', style: 'cancel' },
-                      {
-                        text: 'Effacer',
-                        style: 'destructive',
-                        onPress: async () => {
-                          await AsyncStorage.clear();
-                          setSettingsOpen(false);
-                          Alert.alert('Données effacées', 'Relance l\'app pour repartir de zéro.');
-                        },
-                      },
-                    ],
-                  );
-                }}
-              >
-                <Text style={[styles.settingsLabel, { color: '#DC2626' }]}>Effacer toutes les données</Text>
-                <Text style={styles.settingsValue}>🗑️</Text>
-              </TouchableOpacity>
+            <View style={styles.xpBarBg}>
+              <View style={[styles.xpBarFill, { width: `${xpPct}%` }]} />
             </View>
-
-            <Text style={styles.versionText}>Flowi v1.0 — {userName}</Text>
           </View>
         </View>
-      </Modal>
-    </SafeAreaView>
+        {nextLvl && (
+          <Text style={styles.xpNext}>{nextLvl.min - xp} XP pour {nextLvl.label} {nextLvl.emoji}</Text>
+        )}
+      </Animated.View>
+      </Pressable>
+
+      {/* ── PRIORITÉS DU JOUR ── */}
+      <Animated.View entering={FadeInDown.delay(300).duration(400)} style={[styles.prioCard, d.prioCard]}>
+        <View style={styles.cardHeader}>
+          <Text style={styles.prioHeaderText}>🎯 Priorités du jour</Text>
+          <Pressable onPress={() => navigateTo('aujourdhui')}>
+            <Text style={styles.prioLink}>Modifier →</Text>
+          </Pressable>
+        </View>
+        {(() => {
+          const topTodos = todos.filter((t) => !t.done && t.scheduledDate === today).slice(0, 3);
+          if (topTodos.length === 0) {
+            return <Text style={styles.emptyText}>Aucune priorité définie</Text>;
+          }
+          return topTodos.map((t, i) => (
+            <View key={t.id} style={styles.prioRow}>
+              <Text style={{ fontSize: 12, flexShrink: 0 }}>{['🥇', '🥈', '🥉'][i]}</Text>
+              <Text style={styles.prioText} numberOfLines={1}>{t.text}</Text>
+            </View>
+          ));
+        })()}
+      </Animated.View>
+
+      {/* ── PROCHAINS RDV ── */}
+      <Animated.View entering={FadeInDown.delay(400).duration(400)} style={[styles.rdvCard, d.rdvCard]}>
+        <View style={styles.cardHeader}>
+          <Text style={styles.rdvHeaderText}>📅 Prochains rendez-vous</Text>
+          <Pressable onPress={() => navigateTo('aujourdhui')}>
+            <Text style={styles.rdvLink}>Voir tout →</Text>
+          </Pressable>
+        </View>
+        {upcomingEvts.length === 0 ? (
+          <Text style={styles.emptyTextItalic}>Aucun rendez-vous dans les 2 prochaines semaines 🌿</Text>
+        ) : (
+          upcomingEvts.map((ev) => {
+            const cc = CAT_COLORS[ev.category] || '#3B82F6';
+            const isToday = ev.date === today;
+            const evDate = new Date(ev.date + 'T12:00:00');
+            const evLabel = isToday
+              ? "Aujourd'hui"
+              : evDate.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' });
+            return (
+              <View key={ev.id} style={[styles.rdvRow, { borderColor: cc + '33' }]}>
+                <View style={[styles.rdvBar, { backgroundColor: cc }]} />
+                <View style={{ flex: 1, minWidth: 0 }}>
+                  <Text style={styles.rdvTitle} numberOfLines={1}>{ev.title}</Text>
+                  <Text style={styles.rdvDate}>{evLabel}{ev.time ? ` · ${ev.time}` : ''}</Text>
+                </View>
+                <Text style={{ fontSize: 10, color: '#D1D5DB' }}>›</Text>
+              </View>
+            );
+          })
+        )}
+      </Animated.View>
+
+      {/* ── HABITUDES DU JOUR ── */}
+      {habits.length > 0 && (
+        <Animated.View entering={FadeInDown.delay(500).duration(400)} style={[styles.habCard, d.habCard]}>
+          <View style={styles.cardHeader}>
+            <Text style={styles.habHeaderText}>💚 Habitudes</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+              <Text style={styles.habCount}>{habDoneToday}</Text>
+              <Text style={styles.habTotal}>/ {habits.length}</Text>
+            </View>
+          </View>
+          <View style={styles.habChips}>
+            {habits.map((h) => {
+              const done = h.done && h.done[today];
+              return (
+                <View
+                  key={h.id}
+                  style={[
+                    styles.habChip,
+                    {
+                      backgroundColor: done ? '#D1FAE5' : '#FFFFFF',
+                      borderColor: done ? '#6EE7B7' : '#D1FAE5',
+                    },
+                  ]}
+                >
+                  <Text style={{ fontSize: 13 }}>{h.icon}</Text>
+                  <Text
+                    style={[
+                      styles.habChipLabel,
+                      { color: done ? '#065F46' : '#9CA3AF', fontWeight: done ? '700' : '400' },
+                    ]}
+                  >
+                    {h.label}
+                  </Text>
+                </View>
+              );
+            })}
+          </View>
+        </Animated.View>
+      )}
+    </ScrollView>
+    </>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.bg },
-  scroll: { padding: 20, paddingBottom: 40 },
-  greetingRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
-  settingsBtn: { padding: 8 },
-  settingsIcon: { fontSize: 22 },
-  // Settings modal
-  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' },
-  modalSheet: { backgroundColor: colors.surface, borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, paddingBottom: 40 },
-  modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 },
-  modalTitle: { fontSize: 20, fontFamily: 'Inter_700Bold', color: colors.text },
-  modalClose: { fontSize: 20, color: colors.muted, padding: 4 },
-  settingsSection: { marginBottom: 20 },
-  settingsSectionTitle: { fontSize: 12, fontFamily: 'Inter_600SemiBold', color: colors.muted, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 },
-  settingsRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: colors.border },
-  settingsLabel: { fontSize: 15, fontFamily: 'Inter_400Regular', color: colors.text },
-  settingsValue: { fontSize: 14, fontFamily: 'Inter_400Regular', color: colors.muted },
-  versionText: { fontSize: 12, fontFamily: 'Inter_400Regular', color: colors.muted, textAlign: 'center', marginTop: 16 },
-  greeting: {
-    fontSize: 16,
+  container: { flex: 1, backgroundColor: '#FFFFFF' },
+  scroll: { padding: 12, paddingHorizontal: 14, paddingBottom: 40, gap: 12 },
+
+  // Greeting banner
+  greetingBanner: {
+    borderRadius: 20,
+    padding: 20,
+    paddingBottom: 16,
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  decorCircle: {
+    position: 'absolute',
+    borderRadius: 9999,
+    backgroundColor: '#FFFFFF',
+  },
+  dateLabel: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 10,
+    color: 'rgba(255,255,255,0.55)',
+    letterSpacing: 1.2,
+    textTransform: 'uppercase',
+    marginBottom: 6,
+  },
+  greetingText: {
+    fontFamily: 'PlayfairDisplay_700Bold',
+    fontSize: 26,
+    color: '#FFFFFF',
+    marginBottom: 4,
+    lineHeight: 31,
+  },
+  voixFlowi: {
+    fontFamily: 'PlayfairDisplay_700Bold',
+    fontSize: 12,
+    color: 'rgba(255,255,255,0.7)',
+    fontStyle: 'italic',
+    marginBottom: 12,
+    lineHeight: 19,
+  },
+  bannerStats: {
+    flexDirection: 'row',
+    gap: 6,
+    marginTop: 4,
+  },
+  bannerStatCard: {
+    flex: 1,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    borderRadius: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 6,
+    alignItems: 'center',
+  },
+  bannerStatVal: {
+    fontFamily: 'PlayfairDisplay_700Bold',
+    fontSize: 22,
+    color: '#FFFFFF',
+    lineHeight: 24,
+  },
+  bannerStatLabel: {
     fontFamily: 'Inter_400Regular',
-    color: colors.muted,
+    fontSize: 9,
+    color: 'rgba(255,255,255,0.6)',
+    marginTop: 3,
+    lineHeight: 12,
   },
-  name: {
-    fontSize: 28,
+
+  // Secours
+  sectionHeader: {
     fontFamily: 'Inter_700Bold',
-    color: colors.text,
-    marginBottom: 20,
+    fontSize: 10,
+    color: '#9CA3AF',
+    textTransform: 'uppercase',
+    letterSpacing: 0.8,
+    marginBottom: 8,
   },
-  card: {
-    backgroundColor: colors.surface,
+  secoursGrid: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  secoursCard: {
     borderRadius: 14,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: colors.border,
-    marginBottom: 16,
+    padding: 14,
+    paddingHorizontal: 12,
+    gap: 6,
+  },
+  secoursTitle: {
+    fontFamily: 'PlayfairDisplay_700Bold',
+    fontSize: 12,
+    color: '#FFFFFF',
+    lineHeight: 15,
+    marginBottom: 2,
+  },
+  secoursDesc: {
+    fontFamily: 'Inter_400Regular',
+    fontSize: 9,
+    color: 'rgba(255,255,255,0.55)',
+    lineHeight: 13,
+  },
+
+  // XP Card
+  xpCard: {
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: '#DDD6FE',
+    backgroundColor: '#F5F3FF',
+    padding: 10,
+    paddingHorizontal: 14,
   },
   xpRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: 10,
     marginBottom: 8,
   },
-  xpLevel: {
-    fontFamily: 'Inter_600SemiBold',
+  xpHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'baseline',
+  },
+  xpLevelLabel: {
+    fontFamily: 'PlayfairDisplay_700Bold',
     fontSize: 15,
-    color: colors.flowi.accent,
+    color: '#4C1D95',
   },
   xpAmount: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 13,
-    color: colors.muted,
+    fontFamily: 'PlayfairDisplay_700Bold',
+    fontSize: 18,
+    color: '#6D28D9',
+  },
+  xpUnit: {
+    fontSize: 10,
+    fontWeight: '400',
+    color: '#A78BFA',
   },
   xpBarBg: {
     height: 6,
-    backgroundColor: colors.border,
+    backgroundColor: '#DDD6FE',
     borderRadius: 3,
-  },
-  xpBarFill: {
-    height: 6,
-    backgroundColor: colors.flowi.accent,
-    borderRadius: 3,
-  },
-  statsRow: {
-    flexDirection: 'row',
-    gap: 10,
-    marginBottom: 20,
-  },
-  statCard: {
-    flex: 1,
-    borderRadius: 12,
-    padding: 12,
-    alignItems: 'center',
-  },
-  statNum: {
-    fontSize: 22,
-    fontFamily: 'Inter_700Bold',
-    color: colors.text,
-  },
-  statLabel: {
-    fontSize: 11,
-    fontFamily: 'Inter_400Regular',
-    color: colors.muted,
-    marginTop: 2,
-  },
-  section: {
-    backgroundColor: colors.surface,
-    borderRadius: 14,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: colors.border,
-    marginBottom: 12,
-  },
-  sectionTitle: {
-    fontSize: 15,
-    fontFamily: 'Inter_600SemiBold',
-    color: colors.text,
-    marginBottom: 12,
-  },
-  todoRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    paddingVertical: 6,
-  },
-  prioDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-  },
-  todoText: {
-    flex: 1,
-    fontSize: 14,
-    fontFamily: 'Inter_400Regular',
-    color: colors.text,
-  },
-  moreText: {
-    fontSize: 13,
-    fontFamily: 'Inter_400Regular',
-    color: colors.muted,
+    overflow: 'hidden',
     marginTop: 4,
   },
-  eventRow: {
+  xpBarFill: {
+    height: '100%',
+    backgroundColor: '#7C3AED',
+    borderRadius: 3,
+  },
+  xpNext: {
+    fontFamily: 'Inter_400Regular',
+    fontSize: 9,
+    color: '#7C3AED',
+    textAlign: 'right',
+  },
+
+  // Priorités
+  prioCard: {
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: '#FED7AA',
+    backgroundColor: '#FFFBEB',
+    padding: 10,
+    paddingHorizontal: 12,
+  },
+  cardHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  prioHeaderText: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 10,
+    color: '#92400E',
+    textTransform: 'uppercase',
+    letterSpacing: 0.6,
+  },
+  prioLink: {
+    fontSize: 9,
+    color: '#D97706',
+    fontFamily: 'Inter_700Bold',
+  },
+  prioRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingVertical: 6,
+    paddingHorizontal: 8,
+    borderRadius: 8,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#FDE68A',
+    marginBottom: 5,
+  },
+  prioText: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 12,
+    color: '#78350F',
+    flex: 1,
+  },
+  emptyText: {
+    fontFamily: 'Inter_400Regular',
+    fontSize: 11,
+    color: '#D1B896',
+    textAlign: 'center',
     paddingVertical: 6,
   },
-  eventTime: {
-    fontSize: 13,
-    fontFamily: 'Inter_600SemiBold',
-    color: colors.agenda.accent,
-    width: 50,
+
+  // RDV
+  rdvCard: {
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: '#BFDBFE',
+    backgroundColor: '#EFF6FF',
+    padding: 10,
+    paddingHorizontal: 12,
   },
-  eventTitle: {
-    flex: 1,
-    fontSize: 14,
+  rdvHeaderText: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 10,
+    color: '#1E40AF',
+    textTransform: 'uppercase',
+    letterSpacing: 0.6,
+  },
+  rdvLink: {
+    fontSize: 9,
+    color: '#3B82F6',
+    fontFamily: 'Inter_700Bold',
+  },
+  rdvRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingVertical: 6,
+    paddingHorizontal: 8,
+    borderRadius: 8,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    marginBottom: 5,
+  },
+  rdvBar: {
+    width: 3,
+    borderRadius: 2,
+    alignSelf: 'stretch',
+    minHeight: 20,
+  },
+  rdvTitle: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 12,
+    color: '#1F2937',
+  },
+  rdvDate: {
     fontFamily: 'Inter_400Regular',
-    color: colors.text,
+    fontSize: 9,
+    color: '#6B7280',
+    marginTop: 1,
+  },
+  emptyTextItalic: {
+    fontFamily: 'PlayfairDisplay_700Bold',
+    fontSize: 11,
+    color: '#93C5FD',
+    fontStyle: 'italic',
+    textAlign: 'center',
+    paddingVertical: 8,
+  },
+
+  // Habitudes
+  habCard: {
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: '#A7F3D0',
+    backgroundColor: '#F0FDF4',
+    padding: 10,
+    paddingHorizontal: 12,
+  },
+  habHeaderText: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 10,
+    color: '#065F46',
+    textTransform: 'uppercase',
+    letterSpacing: 0.6,
+  },
+  habCount: {
+    fontFamily: 'PlayfairDisplay_700Bold',
+    fontSize: 16,
+    color: '#059669',
+  },
+  habTotal: {
+    fontFamily: 'Inter_400Regular',
+    fontSize: 9,
+    color: '#6EE7B7',
+  },
+  habChips: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 5,
+  },
+  habChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingVertical: 4,
+    paddingHorizontal: 9,
+    borderRadius: 20,
+    borderWidth: 1,
+  },
+  habChipLabel: {
+    fontFamily: 'Inter_400Regular',
+    fontSize: 10,
   },
 });

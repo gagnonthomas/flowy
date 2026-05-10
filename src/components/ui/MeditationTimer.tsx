@@ -7,6 +7,7 @@ import { Circle, Svg } from 'react-native-svg';
 import * as Haptics from 'expo-haptics';
 import { colors } from '@/constants/colors';
 import { useFlowiStore } from '@/store';
+import { fetchMeditationGuidance } from '@/utils/api';
 
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 const RADIUS = 100;
@@ -61,6 +62,8 @@ export function MeditationTimer() {
   const [phase, setPhase] = useState<'idle' | 'running' | 'done'>('idle');
   const [elapsed, setElapsed] = useState(0);
   const [promptIdx, setPromptIdx] = useState(0);
+  const [guidance, setGuidance] = useState<string | null>(null);
+  const [guidanceLoading, setGuidanceLoading] = useState(false);
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const promptRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -145,7 +148,7 @@ export function MeditationTimer() {
                 <TouchableOpacity
                   key={t.id}
                   style={[styles.typeCard, sel && styles.typeCardActive]}
-                  onPress={() => setTypeIdx(i)}
+                  onPress={() => { setTypeIdx(i); setGuidance(null); }}
                 >
                   <Text style={styles.typeEmoji}>{t.emoji}</Text>
                   <Text style={[styles.typeLabel, sel && styles.typeLabelActive]}>{t.label}</Text>
@@ -163,7 +166,7 @@ export function MeditationTimer() {
                 <TouchableOpacity
                   key={d}
                   style={[styles.durationBtn, sel && styles.durationBtnActive]}
-                  onPress={() => setDuration(d)}
+                  onPress={() => { setDuration(d); setGuidance(null); }}
                 >
                   <Text style={[styles.durationText, sel && styles.durationTextActive]}>
                     {d}min
@@ -171,6 +174,30 @@ export function MeditationTimer() {
                 </TouchableOpacity>
               );
             })}
+          </View>
+
+          {/* Guidance Flowi */}
+          <View style={styles.guidanceCard}>
+            {guidanceLoading ? (
+              <Text style={styles.guidanceLoading}>Flowi prépare ta séance...</Text>
+            ) : guidance ? (
+              <Text style={styles.guidanceText}>{guidance}</Text>
+            ) : (
+              <TouchableOpacity
+                onPress={() => {
+                  setGuidanceLoading(true);
+                  const typeLabel = MEDIT_TYPES[typeIdx].label;
+                  fetchMeditationGuidance(duration, typeLabel, 'Moyen').then((text) => {
+                    setGuidance(text || `Installe-toi confortablement. Pendant ces ${duration} minutes, tu vas simplement observer ta respiration. Tu es exactement là où tu dois être. 🌿`);
+                    setGuidanceLoading(false);
+                  });
+                }}
+                style={styles.guidanceBtn}
+              >
+                <Text style={{ fontSize: 16 }}>🌿</Text>
+                <Text style={styles.guidanceBtnText}>Demander une guidance à Flowi</Text>
+              </TouchableOpacity>
+            )}
           </View>
         </>
       )}
@@ -264,6 +291,45 @@ const styles = StyleSheet.create({
   timerPrompt: { fontSize: 13, fontFamily: 'Inter_400Regular', color: colors.muted, textAlign: 'center', marginTop: 8, lineHeight: 18 },
   doneText: { fontSize: 20, fontFamily: 'Inter_700Bold', color: colors.moi.accent },
   doneSubtext: { fontSize: 14, fontFamily: 'Inter_600SemiBold', color: colors.muted, marginTop: 4 },
+  // Guidance
+  guidanceCard: {
+    width: '100%',
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(167,139,250,0.2)',
+    backgroundColor: 'rgba(109,40,217,0.08)',
+    padding: 12,
+    paddingHorizontal: 14,
+    minHeight: 60,
+    marginBottom: 16,
+    justifyContent: 'center',
+  },
+  guidanceLoading: {
+    fontFamily: 'Inter_400Regular',
+    fontSize: 11,
+    color: 'rgba(167,139,250,0.5)',
+    fontStyle: 'italic',
+    textAlign: 'center',
+  },
+  guidanceText: {
+    fontFamily: 'Inter_400Regular',
+    fontSize: 12,
+    color: '#8B7FC7',
+    lineHeight: 22,
+    fontStyle: 'italic',
+  },
+  guidanceBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 4,
+  },
+  guidanceBtnText: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 11,
+    color: 'rgba(167,139,250,0.6)',
+  },
   actionBtn: { backgroundColor: colors.moi.accent, paddingVertical: 14, paddingHorizontal: 40, borderRadius: 24 },
   stopBtn: { backgroundColor: '#EF4444' },
   actionBtnText: { color: '#fff', fontSize: 16, fontFamily: 'Inter_700Bold' },

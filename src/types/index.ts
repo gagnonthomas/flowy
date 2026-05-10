@@ -83,6 +83,12 @@ export interface Badge {
   date: string;
 }
 
+export interface Goal {
+  id: string;
+  text: string;
+  done: boolean;
+}
+
 export type EnergyLog = Record<string, number>;
 export type MoodLog = Record<string, number>;
 export type SleepLog = Record<string, { hours: number; quality: number; note?: string }>;

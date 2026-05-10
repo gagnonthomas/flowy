@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "Flowy",
-    "slug": "flowy",
-    "scheme": "flowy",
+    "name": "Flowi",
+    "slug": "flowi",
+    "scheme": "flowi",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -15,7 +15,7 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.flowy.app",
+      "bundleIdentifier": "com.flowi.app",
       "buildNumber": "1"
     },
     "android": {
@@ -23,7 +23,7 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.flowy.app"
+      "package": "com.flowi.app"
     },
     "web": {
       "bundler": "metro",
