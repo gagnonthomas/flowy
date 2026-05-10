@@ -82,7 +82,7 @@ export async function saveWidgetData(data: WidgetData) {
     await AsyncStorage.setItem('flowi-widget-data', JSON.stringify(data));
     // TODO: For dev build, also save to App Groups (iOS) / SharedPreferences (Android)
     // import SharedGroupPreferences from 'react-native-shared-group-preferences';
-    // await SharedGroupPreferences.setItem('widgetData', JSON.stringify(data), 'group.com.flowy.app');
+    // await SharedGroupPreferences.setItem('widgetData', JSON.stringify(data), 'group.com.flowi.app');
   } catch (e) {
     console.warn('Widget data save error:', e);
   }
