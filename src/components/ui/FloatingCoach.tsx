@@ -3,10 +3,14 @@ import { View, Text, StyleSheet, Pressable, TextInput, FlatList, KeyboardAvoidin
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
+import { useWindowDimensions } from 'react-native';
 import { useFlowiStore } from '@/store';
 import { sendCoachMessage } from '@/utils/api';
 
 export function FloatingCoach() {
+  const { width } = useWindowDimensions();
+  const isTablet = width >= 768;
+  const fabSize = isTablet ? 60 : 50;
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -38,7 +42,7 @@ export function FloatingCoach() {
     <View style={s.container} pointerEvents="box-none">
       {/* Chat popup */}
       {open && (
-        <Animated.View entering={FadeIn.duration(200)} exiting={FadeOut.duration(150)} style={s.popup}>
+        <Animated.View entering={FadeIn.duration(200)} exiting={FadeOut.duration(150)} style={[s.popup, isTablet && { width: 380, maxHeight: 500 }]}>
           {/* Header */}
           <LinearGradient colors={['#1E40AF', '#6D28D9']} style={s.popupHeader}>
             <View style={s.popupHeaderLeft}>
@@ -113,9 +117,9 @@ export function FloatingCoach() {
       >
         <LinearGradient
           colors={open ? ['#EF4444', '#DC2626'] : ['#1E40AF', '#6D28D9']}
-          style={s.fab}
+          style={[s.fab, { width: fabSize, height: fabSize, borderRadius: fabSize / 2 }]}
         >
-          <Text style={s.fabText}>{open ? '×' : '🧠'}</Text>
+          <Text style={[s.fabText, { fontSize: isTablet ? 26 : 22 }]}>{open ? '×' : '🧠'}</Text>
         </LinearGradient>
       </Pressable>
     </View>

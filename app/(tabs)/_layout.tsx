@@ -68,8 +68,8 @@ export default function TabLayout() {
   const activeTab = pathname.split('/').pop() || 'accueil';
 
   const isPhone = width < 768;
-  const isTablet = width >= 768 && width < 1024;
-  const navW = isPhone ? 64 : isTablet ? 70 : 78;
+  const isTablet = width >= 768 && width < 1200;
+  const navW = isPhone ? 64 : isTablet ? 88 : 100;
 
   const handlePress = (name: string) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -94,16 +94,18 @@ export default function TabLayout() {
       >
         {/* Logo */}
         <Pressable onPress={() => handlePress('accueil')} style={[s.logoSection, { borderBottomColor: dark ? '#1e1e36' : '#F0F0F8' }]}>
-          <SidebarLotus size={36} dark={dark} />
-          <Text style={[s.logoText, { color: t.wordmark }]}>Flowi</Text>
+          <SidebarLotus size={isPhone ? 36 : 48} dark={dark} />
+          <Text style={[s.logoText, { color: t.wordmark, fontSize: isPhone ? 12 : 15 }]}>Flowi</Text>
         </Pressable>
 
         {/* Nav items */}
-        <View style={s.navList}>
+        <View style={[s.navList, { gap: isPhone ? 2 : 4 }]}>
           {TAB_CONFIG.map((tab) => {
             const isActive = activeTab === tab.name;
             const palette = SECTION_COLORS[tab.name];
             const activeBg = dark ? palette.accent + '20' : palette.light;
+            const iconSize = isPhone ? (isActive ? 20 : 17) : (isActive ? 26 : 22);
+            const iconWrapSize = isPhone ? 32 : 40;
 
             return (
               <Pressable
@@ -111,17 +113,18 @@ export default function TabLayout() {
                 onPress={() => handlePress(tab.name)}
                 style={[
                   s.tabItem,
+                  { paddingVertical: isPhone ? 8 : 10 },
                   isActive && { backgroundColor: activeBg },
                 ]}
               >
                 {/* Active indicator bar */}
                 {isActive && (
-                  <View style={[s.activeBar, { backgroundColor: palette.accent }]} />
+                  <View style={[s.activeBar, { backgroundColor: palette.accent, height: isPhone ? 22 : 28, transform: [{ translateY: isPhone ? -11 : -14 }] }]} />
                 )}
 
                 {/* Icon */}
-                <View style={[s.iconWrap, isActive && { backgroundColor: palette.accent + '18' }]}>
-                  <Text style={{ fontSize: isActive ? 20 : 17 }}>{tab.icon}</Text>
+                <View style={[s.iconWrap, { width: iconWrapSize, height: iconWrapSize, borderRadius: isPhone ? 10 : 12 }, isActive && { backgroundColor: palette.accent + '18' }]}>
+                  <Text style={{ fontSize: iconSize }}>{tab.icon}</Text>
                 </View>
 
                 {/* Label */}
@@ -129,6 +132,7 @@ export default function TabLayout() {
                   style={[
                     s.tabLabel,
                     {
+                      fontSize: isPhone ? 9 : 11,
                       color: isActive ? palette.accent : dark ? '#6B7280' : '#9CA3AF',
                       fontWeight: isActive ? '700' : '400',
                       fontFamily: isActive ? 'Inter_700Bold' : 'Inter_400Regular',
@@ -150,18 +154,18 @@ export default function TabLayout() {
         <View style={s.utilSection}>
           <Pressable
             onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); }}
-            style={[s.utilBtn, dark && { backgroundColor: '#1a1a2e' }]}
+            style={[s.utilBtn, { paddingVertical: isPhone ? 6 : 8 }, dark && { backgroundColor: '#1a1a2e' }]}
           >
-            <Text style={{ fontSize: 16 }}>🌿</Text>
-            <Text style={[s.utilLabel, { color: dark ? '#6B7280' : '#9CA3AF' }]}>Urgence</Text>
+            <Text style={{ fontSize: isPhone ? 16 : 20 }}>🌿</Text>
+            <Text style={[s.utilLabel, { fontSize: isPhone ? 8 : 10, color: dark ? '#6B7280' : '#9CA3AF' }]}>Urgence</Text>
           </Pressable>
 
           <Pressable
             onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); toggleDarkMode(); }}
-            style={[s.utilBtn, dark && { backgroundColor: '#1a1a2e' }]}
+            style={[s.utilBtn, { paddingVertical: isPhone ? 6 : 8 }, dark && { backgroundColor: '#1a1a2e' }]}
           >
-            <Text style={{ fontSize: 16 }}>{darkMode ? '☀️' : '🌙'}</Text>
-            <Text style={[s.utilLabel, { color: dark ? '#6B7280' : '#9CA3AF' }]}>
+            <Text style={{ fontSize: isPhone ? 16 : 20 }}>{darkMode ? '☀️' : '🌙'}</Text>
+            <Text style={[s.utilLabel, { fontSize: isPhone ? 8 : 10, color: dark ? '#6B7280' : '#9CA3AF' }]}>
               {darkMode ? 'Clair' : 'Sombre'}
             </Text>
           </Pressable>

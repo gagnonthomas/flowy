@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Pressable, useWindowDimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
@@ -37,6 +37,8 @@ export default function AccueilScreen() {
   const [badDayVisible, setBadDayVisible] = useState(false);
   const { t } = useTheme();
   const d = useDarkOverrides();
+  const { width } = useWindowDimensions();
+  const isTablet = width >= 768;
   const router = useRouter();
   const userName = useFlowiStore((s) => s.userName);
   const updateTodo = useFlowiStore((s) => s.updateTodo);
@@ -76,7 +78,13 @@ export default function AccueilScreen() {
     bestStreak >= 5 ? `${bestStreak} jours de streak — la constance, c'est du courage. 🔥` : null,
     habDoneToday >= 3 ? `${habDoneToday} habitudes cochées aujourd'hui. Ça s'accumule. 💚` : null,
   ].filter(Boolean);
-  const voixMsg = voixMsgs[0] || null;
+  // Always show a message — fallback by time of day
+  const defaultVoix = nowH < 12
+    ? 'Chaque petit pas compte. Tu avances, même quand tu ne le vois pas. 🌿'
+    : nowH < 18
+      ? 'L\'après-midi est à toi. Choisis une chose et fonce. 🎯'
+      : 'Bravo pour cette journée. Repose-toi bien ce soir. 🌙';
+  const voixMsg = voixMsgs[0] || defaultVoix;
 
   // Upcoming events (2 weeks)
   const twoWeeksDate = (() => { const d = new Date(); d.setDate(d.getDate() + 14); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; })();
@@ -100,7 +108,7 @@ export default function AccueilScreen() {
   return (
     <>
     <BadDayModal visible={badDayVisible} onClose={() => setBadDayVisible(false)} />
-    <ScrollView style={[styles.container, { backgroundColor: t.screenBg }]} contentContainerStyle={[styles.scroll]} showsVerticalScrollIndicator={false}>
+    <ScrollView style={[styles.container, { backgroundColor: t.screenBg }]} contentContainerStyle={[styles.scroll, isTablet && { padding: 20, paddingHorizontal: 24 }]} showsVerticalScrollIndicator={false}>
 
       {/* ── SALUTATION ── */}
       <Animated.View entering={FadeIn.duration(500)}>
@@ -108,18 +116,18 @@ export default function AccueilScreen() {
           colors={['#3730A3', '#6D28D9', '#7C3AED']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
-          style={styles.greetingBanner}
+          style={[styles.greetingBanner, isTablet && { padding: 28, paddingBottom: 22, borderRadius: 24 }]}
         >
           {/* Decorative circles */}
           <View style={[styles.decorCircle, { width: 120, height: 120, right: -20, top: -20, opacity: 0.05 }]} />
           <View style={[styles.decorCircle, { width: 80, height: 80, right: 30, bottom: -40, opacity: 0.04 }]} />
           <View style={[styles.decorCircle, { width: 60, height: 60, left: -10, bottom: -20, opacity: 0.03 }]} />
 
-          <Text style={styles.dateLabel}>{dateLabel}</Text>
-          <Text style={styles.greetingText}>{greeting}</Text>
+          <Text style={[styles.dateLabel, isTablet && { fontSize: 12 }]}>{dateLabel}</Text>
+          <Text style={[styles.greetingText, isTablet && { fontSize: 32, lineHeight: 38 }]}>{greeting}</Text>
 
           {voixMsg && (
-            <Text style={styles.voixFlowi}>{voixMsg}</Text>
+            <Text style={[styles.voixFlowi, isTablet && { fontSize: 14, lineHeight: 22 }]}>{voixMsg}</Text>
           )}
 
           {/* Stats row */}
@@ -141,33 +149,31 @@ export default function AccueilScreen() {
       {/* ── OUTILS DE SECOURS ── */}
       <Animated.View entering={FadeInDown.delay(100).duration(400)}>
         <Text style={[styles.sectionHeader, d.textMuted]}>Outils de secours</Text>
-        <View style={styles.secoursGrid}>
+        <View style={[styles.secoursGrid, isTablet && { flexWrap: 'nowrap' }]}>
           <Pressable onPress={() => setBadDayVisible(true)} style={{ flex: 1 }}>
             <LinearGradient colors={['#1E1B4B', '#3730A3']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.secoursCard}>
-              <Text style={{ fontSize: 26 }}>🌿</Text>
+              <Text style={{ fontSize: isTablet ? 22 : 26 }}>🌿</Text>
               <View>
                 <Text style={styles.secoursTitle}>Mode urgence</Text>
-                <Text style={styles.secoursDesc}>Journée difficile ? Une chose à la fois.</Text>
+                {!isTablet && <Text style={styles.secoursDesc}>Journée difficile ? Une chose à la fois.</Text>}
               </View>
             </LinearGradient>
           </Pressable>
           <Pressable onPress={() => { useFlowiStore.setState({ quickRoutineRequested: true }); navigateTo('aujourdhui'); }} style={{ flex: 1 }}>
             <LinearGradient colors={['#92400E', '#D97706']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.secoursCard}>
-              <Text style={{ fontSize: 26 }}>⚡</Text>
+              <Text style={{ fontSize: isTablet ? 22 : 26 }}>⚡</Text>
               <View>
                 <Text style={styles.secoursTitle}>Routine 5 min</Text>
-                <Text style={styles.secoursDesc}>Respirer, cibler, agir. C'est tout.</Text>
+                {!isTablet && <Text style={styles.secoursDesc}>Respirer, cibler, agir. C'est tout.</Text>}
               </View>
             </LinearGradient>
           </Pressable>
-        </View>
-        <View style={[styles.secoursGrid, { marginTop: 8 }]}>
           <Pressable onPress={() => { useFlowiStore.setState({ notesRequested: true }); navigateTo('taches'); }} style={{ flex: 1 }}>
             <LinearGradient colors={['#312E81', '#6D28D9']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.secoursCard}>
-              <Text style={{ fontSize: 26 }}>🌫️</Text>
+              <Text style={{ fontSize: isTablet ? 22 : 26 }}>🌫️</Text>
               <View>
                 <Text style={styles.secoursTitle}>Vide-cerveau</Text>
-                <Text style={styles.secoursDesc}>Dépose tout. Sans ordre. Sans pression.</Text>
+                {!isTablet && <Text style={styles.secoursDesc}>Dépose tout. Sans ordre. Sans pression.</Text>}
               </View>
             </LinearGradient>
           </Pressable>
@@ -179,10 +185,10 @@ export default function AccueilScreen() {
             showToast(`${todayTodos.length} tâche${todayTodos.length > 1 ? 's' : ''} reportée${todayTodos.length > 1 ? 's' : ''} à demain 🌙`, 'info');
           }} style={{ flex: 1 }}>
             <LinearGradient colors={['#1F2937', '#374151']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.secoursCard}>
-              <Text style={{ fontSize: 26 }}>🌙</Text>
+              <Text style={{ fontSize: isTablet ? 22 : 26 }}>🌙</Text>
               <View>
                 <Text style={styles.secoursTitle}>Pas aujourd'hui</Text>
-                <Text style={styles.secoursDesc}>Reporter sans culpabilité. C'est correct.</Text>
+                {!isTablet && <Text style={styles.secoursDesc}>Reporter sans culpabilité. C'est correct.</Text>}
               </View>
             </LinearGradient>
           </Pressable>
@@ -191,7 +197,7 @@ export default function AccueilScreen() {
 
       {/* ── XP + NIVEAU ── */}
       <Pressable onPress={() => { useFlowiStore.setState({ xpRequested: true }); navigateTo('flowi'); }}>
-      <Animated.View entering={FadeInDown.delay(200).duration(400)} style={[styles.xpCard, d.card]}>
+      <Animated.View entering={FadeInDown.delay(200).duration(400)} style={[styles.xpCard, d.card, isTablet && { padding: 16, paddingHorizontal: 20 }]}>
         <View style={styles.xpRow}>
           <Text style={{ fontSize: 32 }}>{curLvl.emoji}</Text>
           <View style={{ flex: 1 }}>
@@ -211,7 +217,7 @@ export default function AccueilScreen() {
       </Pressable>
 
       {/* ── PRIORITÉS DU JOUR ── */}
-      <Animated.View entering={FadeInDown.delay(300).duration(400)} style={[styles.prioCard, d.prioCard]}>
+      <Animated.View entering={FadeInDown.delay(300).duration(400)} style={[styles.prioCard, d.prioCard, isTablet && { padding: 14, paddingHorizontal: 18 }]}>
         <View style={styles.cardHeader}>
           <Text style={styles.prioHeaderText}>🎯 Priorités du jour</Text>
           <Pressable onPress={() => navigateTo('aujourdhui')}>
@@ -233,7 +239,7 @@ export default function AccueilScreen() {
       </Animated.View>
 
       {/* ── PROCHAINS RDV ── */}
-      <Animated.View entering={FadeInDown.delay(400).duration(400)} style={[styles.rdvCard, d.rdvCard]}>
+      <Animated.View entering={FadeInDown.delay(400).duration(400)} style={[styles.rdvCard, d.rdvCard, isTablet && { padding: 14, paddingHorizontal: 18 }]}>
         <View style={styles.cardHeader}>
           <Text style={styles.rdvHeaderText}>📅 Prochains rendez-vous</Text>
           <Pressable onPress={() => navigateTo('aujourdhui')}>
@@ -266,7 +272,7 @@ export default function AccueilScreen() {
 
       {/* ── HABITUDES DU JOUR ── */}
       {habits.length > 0 && (
-        <Animated.View entering={FadeInDown.delay(500).duration(400)} style={[styles.habCard, d.habCard]}>
+        <Animated.View entering={FadeInDown.delay(500).duration(400)} style={[styles.habCard, d.habCard, isTablet && { padding: 14, paddingHorizontal: 18 }]}>
           <View style={styles.cardHeader}>
             <Text style={styles.habHeaderText}>💚 Habitudes</Text>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
@@ -386,6 +392,7 @@ const styles = StyleSheet.create({
   },
   secoursGrid: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: 8,
   },
   secoursCard: {

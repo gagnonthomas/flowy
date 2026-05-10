@@ -3190,16 +3190,16 @@ export default function App() {
       var PBGS_F={urgente:"#FEF2F2",haute:"#FFF7ED",normale:"#EEF2FF",basse:"#F0FDF4"};
       var PBORDERS_F={urgente:"#FCA5A5",haute:"#FED7AA",normale:"#C7D2FE",basse:"#BBF7D0"};
       return(
-        <div style={{display:"flex",flexDirection:"column",height:"100%"}}>
+        <div style={{display:"flex",flexDirection:"column",height:"100%",overflow:"hidden",position:"absolute",inset:0}}>
 
           {/* ── MODE TABS ── */}
           <div style={{display:"flex",gap:0,background:"#F8F9FF",borderBottom:"1.5px solid #E8EDF5",flexShrink:0}}>
             {[{id:"chat",icon:"💬",label:"Chat"},{id:"plan",icon:"✨",label:"Plan du jour"},{id:"decompose",icon:"✂️",label:"Décomposer"}].map(function(m){
               var active=flowiMode===m.id;
               return(
-                <button key={m.id} onClick={function(){setFlowiMode(m.id);}} style={{flex:1,padding:"10px 4px",border:"none",borderBottom:active?"2.5px solid #16A34A":"2.5px solid transparent",background:"transparent",display:"flex",flexDirection:"column",alignItems:"center",gap:2,cursor:"pointer",transition:"all 0.15s"}}>
-                  <span style={{fontSize:16}}>{m.icon}</span>
-                  <span style={{fontFamily:"'Inter',sans-serif",fontSize:10,fontWeight:active?800:500,color:active?"#16A34A":"#9CA3AF"}}>{m.label}</span>
+                <button key={m.id} onClick={function(){setFlowiMode(m.id);}} style={{flex:1,padding:"7px 4px",border:"none",borderBottom:active?"2.5px solid #16A34A":"2.5px solid transparent",background:"transparent",display:"flex",flexDirection:"column",alignItems:"center",gap:2,cursor:"pointer",transition:"all 0.15s"}}>
+                  <span style={{fontSize:14}}>{m.icon}</span>
+                  <span style={{fontFamily:"'Inter',sans-serif",fontSize:9,fontWeight:active?800:500,color:active?"#16A34A":"#9CA3AF"}}>{m.label}</span>
                 </button>
               );
             })}
@@ -3207,38 +3207,38 @@ export default function App() {
 
           {/* ── MODE : CHAT ── */}
           {flowiMode==="chat"&&(
-            <div style={{display:"flex",flexDirection:"column",flex:1,overflow:"hidden"}}>
-              <div ref={coachScrollRef} style={{flex:1,overflowY:"auto",padding:"14px 14px 8px",display:"flex",flexDirection:"column",gap:10}}>
+            <div style={{display:"flex",flexDirection:"column",flex:1,minHeight:0}}>
+              <div ref={coachScrollRef} style={{flex:1,overflowY:"auto",padding:"10px 10px 4px",display:"flex",flexDirection:"column",gap:6,minHeight:0}}>
                 {coachMsgs.map(function(m,i){
                   var isUser=m.role==="user";
                   return(
                     <div key={i} style={{display:"flex",justifyContent:isUser?"flex-end":"flex-start"}}>
-                      {!isUser&&<div style={{width:28,height:28,borderRadius:"50%",background:"linear-gradient(135deg,#16A34A,#059669)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,flexShrink:0,marginRight:8,alignSelf:"flex-end"}}>🌿</div>}
-                      <div style={{maxWidth:"78%",padding:"9px 13px",borderRadius:isUser?"16px 16px 4px 16px":"16px 16px 16px 4px",background:isUser?"#16A34A":"#F9FAFB",border:isUser?"none":"1px solid #E5E7EB"}}>
-                        <p style={{fontSize:12,color:isUser?"white":"#1F2937",lineHeight:1.6,whiteSpace:"pre-wrap"}}>{m.text}</p>
+                      {!isUser&&<div style={{width:22,height:22,borderRadius:"50%",background:"linear-gradient(135deg,#16A34A,#059669)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,flexShrink:0,marginRight:6,alignSelf:"flex-end"}}>🌿</div>}
+                      <div style={{maxWidth:"80%",padding:"7px 10px",borderRadius:isUser?"12px 12px 4px 12px":"12px 12px 12px 4px",background:isUser?"#16A34A":"#F9FAFB",border:isUser?"none":"1px solid #E5E7EB"}}>
+                        <p style={{fontSize:11,color:isUser?"white":"#1F2937",lineHeight:1.5,whiteSpace:"pre-wrap"}}>{m.text}</p>
                       </div>
                     </div>
                   );
                 })}
                 {coachLoading&&(
-                  <div style={{display:"flex",alignItems:"center",gap:8}}>
-                    <div style={{width:28,height:28,borderRadius:"50%",background:"linear-gradient(135deg,#16A34A,#059669)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14}}>🌿</div>
-                    <div style={{padding:"10px 14px",borderRadius:"16px 16px 16px 4px",background:"#F9FAFB",border:"1px solid #E5E7EB"}}>
-                      <div style={{display:"flex",gap:4,alignItems:"center"}}>
-                        {[0,1,2].map(function(d){return(<div key={d} style={{width:6,height:6,borderRadius:"50%",background:"#9CA3AF"}}/>);})}
+                  <div style={{display:"flex",alignItems:"center",gap:6}}>
+                    <div style={{width:22,height:22,borderRadius:"50%",background:"linear-gradient(135deg,#16A34A,#059669)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:11}}>🌿</div>
+                    <div style={{padding:"7px 10px",borderRadius:"12px 12px 12px 4px",background:"#F9FAFB",border:"1px solid #E5E7EB"}}>
+                      <div style={{display:"flex",gap:3,alignItems:"center"}}>
+                        {[0,1,2].map(function(d){return(<div key={d} style={{width:5,height:5,borderRadius:"50%",background:"#9CA3AF"}}/>);})}
                       </div>
                     </div>
                   </div>
                 )}
               </div>
-              <div style={{padding:"0 12px 6px",display:"flex",gap:5,overflowX:"auto",flexShrink:0}}>
+              <div style={{padding:"0 10px 4px",display:"flex",gap:4,overflowX:"auto",flexShrink:0}}>
                 {CPILLS.map(function(p){return(
-                  <button key={p} onClick={function(){setCoachInput(p);}} style={{flexShrink:0,padding:"5px 10px",borderRadius:20,border:"1px solid #D1FAE5",background:"#F0FDF4",fontSize:10,color:"#065F46",cursor:"pointer",whiteSpace:"nowrap"}}>{p}</button>
+                  <button key={p} onClick={function(){setCoachInput(p);}} style={{flexShrink:0,padding:"4px 8px",borderRadius:20,border:"1px solid #D1FAE5",background:"#F0FDF4",fontSize:9,color:"#065F46",cursor:"pointer",whiteSpace:"nowrap"}}>{p}</button>
                 );})}
               </div>
-              <div style={{padding:"8px 12px 14px",borderTop:"1px solid #F0F0F0",display:"flex",gap:8,alignItems:"flex-end",flexShrink:0}}>
-                <textarea value={coachInput} onChange={function(e){setCoachInput(e.target.value);}} onKeyDown={function(e){if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendCoach();}}} placeholder="Parle à Flowi... (Entrée pour envoyer)" rows={2} style={{flex:1,padding:"9px 12px",borderRadius:12,border:"1.5px solid #E5E7EB",fontSize:12,resize:"none",background:"white",color:"#1F2937",lineHeight:1.5}}/>
-                <button onClick={sendCoach} disabled={coachLoading||!coachInput.trim()} style={{width:38,height:38,borderRadius:12,border:"none",background:coachLoading||!coachInput.trim()?"#E5E7EB":"#16A34A",color:"white",fontSize:18,cursor:coachLoading||!coachInput.trim()?"not-allowed":"pointer",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>↑</button>
+              <div style={{padding:"6px 10px 10px",borderTop:"1px solid #F0F0F0",display:"flex",gap:6,alignItems:"center",flexShrink:0,background:"white"}}>
+                <textarea value={coachInput} onChange={function(e){setCoachInput(e.target.value);}} onKeyDown={function(e){if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendCoach();}}} placeholder="Parle à Flowi..." rows={1} style={{flex:1,padding:"7px 10px",borderRadius:10,border:"1.5px solid #E5E7EB",fontSize:11,resize:"none",background:"white",color:"#1F2937",lineHeight:1.4,maxHeight:60,overflowY:"auto"}}/>
+                <button onClick={sendCoach} disabled={coachLoading||!coachInput.trim()} style={{width:32,height:32,borderRadius:10,border:"none",background:coachLoading||!coachInput.trim()?"#E5E7EB":"#16A34A",color:"white",fontSize:16,cursor:coachLoading||!coachInput.trim()?"not-allowed":"pointer",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>↑</button>
               </div>
             </div>
           )}
@@ -4469,20 +4469,25 @@ export default function App() {
           </div>,
           /* 4 — Récap */
           <div key="s4" style={{textAlign:"center"}}>
-            <div style={{fontSize:58,marginBottom:10}}>🚀</div>
-            <p style={{fontFamily:"'Inter',sans-serif",fontSize:22,fontWeight:800,color:"#1E3A8A",marginBottom:6}}>{"Tout est prêt"+(obName.trim()?" "+obName.trim():"")+" !"}</p>
-            <p style={{fontFamily:"'Inter',sans-serif",fontSize:13,color:"#6B7280",marginBottom:18,lineHeight:1.7}}>Tes habitudes personnalisées ont été créées. Ton coach te connaît déjà.</p>
-            {obDefis.length>0&&(
-              <div style={{padding:"12px 16px",borderRadius:14,background:"#F0FDF4",border:"1.5px solid #86EFAC",marginBottom:14,textAlign:"left"}}>
-                <p style={{fontFamily:"'Inter',sans-serif",fontSize:12,fontWeight:700,color:"#15803D",marginBottom:8}}>✅ Habitudes créées pour toi :</p>
-                {obDefis.map(function(d){
-                  var icons={procrastination:"✂️",focus:"⏱",organisation:"📋",memoire:"📖",motivation:"🎉",temps:"📅",priorites:"🎯",stress:"🌬️"};
-                  var labels={procrastination:"Procrastination",focus:"Focus",organisation:"Organisation",memoire:"Mémoire",motivation:"Motivation",temps:"Gestion du temps",priorites:"Priorités",stress:"Stress"};
-                  return <p key={d} style={{fontFamily:"'Inter',sans-serif",fontSize:12,color:"#374151",marginBottom:3}}>{(icons[d]||"⭐")+" "+labels[d]}</p>;
-                })}
-              </div>
-            )}
-            <p style={{fontFamily:"'Inter',sans-serif",fontSize:11,color:"#9CA3AF",lineHeight:1.6}}>Tu peux tout modifier dans l'app à tout moment.</p>
+            <div style={{width:52,height:52,borderRadius:"50%",background:"linear-gradient(135deg,#EEF2FF,#F5F3FF)",border:"1.5px solid #C7D2FE",margin:"0 auto 12px",display:"flex",alignItems:"center",justifyContent:"center"}}>
+              <LotusIcon size={30} animated={true} col="#8B5CF6" bg="transparent"/>
+            </div>
+            <p style={{fontFamily:"'Playfair Display',Georgia,serif",fontSize:17,fontWeight:900,color:"#1E3A8A",marginBottom:8,lineHeight:1.3}}>
+              {"Bienvenue"+(obName.trim()?", "+obName.trim():"")+" 🌿"}
+            </p>
+            <p style={{fontFamily:"'Inter',sans-serif",fontSize:12,color:"#6B7280",marginBottom:12,lineHeight:1.7,padding:"0 4px"}}>
+              {obTdah==="diagnostique"
+                ?"Ton cerveau tourne vite — on va canaliser ça sans te brusquer. Un jour à la fois."
+                :obTdah==="soupcon"
+                ?"L'énergie vient et repart, c'est normal. On va travailler avec ça, pas contre."
+                :"Tu as de bonnes bases. Flowi va t'aider à les affiner et aller plus loin."}
+            </p>
+            <p style={{fontFamily:"'Inter',sans-serif",fontSize:10,color:"#C4C9D4",marginBottom:16,lineHeight:1.5}}>
+              Flowi s'adapte à toi chaque jour · Tout est modifiable
+            </p>
+            <button onClick={finishOnboarding} style={{width:"100%",padding:"12px",borderRadius:12,border:"none",background:"linear-gradient(135deg,#6366F1,#7C3AED)",color:"white",fontFamily:"'Inter',sans-serif",fontSize:14,fontWeight:700,cursor:"pointer",boxShadow:"0 4px 14px rgba(99,102,241,0.3)",letterSpacing:0.2}}>
+              Découvrir Flowi →
+            </button>
           </div>,
         ];
         var canNext=[
@@ -4502,14 +4507,12 @@ export default function App() {
                 })}
               </div>
               {steps[obStep]}
+              {obStep<4&&(
               <div style={{display:"flex",gap:10,marginTop:22}}>
                 <button onClick={function(){setObStep(function(s){return s>0?s-1:-1;});}} style={{flex:1,padding:"12px",borderRadius:12,border:"1.5px solid #E5E7EB",background:"#F9FAFB",color:"#6B7280",fontSize:14,fontWeight:600,cursor:"pointer"}}>← Retour</button>
-                {obStep<4?(
-                  <button onClick={function(){if(canNext[obStep])setObStep(function(s){return s+1;});}} style={{flex:2,padding:"12px",borderRadius:12,border:"none",background:canNext[obStep]?"linear-gradient(135deg,#1E40AF,#6D28D9)":"#E5E7EB",color:canNext[obStep]?"white":"#9CA3AF",fontSize:14,fontWeight:700,cursor:canNext[obStep]?"pointer":"default",transition:"all 0.2s"}}>Continuer →</button>
-                ):(
-                  <button onClick={finishOnboarding} style={{flex:2,padding:"12px",borderRadius:12,border:"none",background:"linear-gradient(135deg,#1E40AF,#6D28D9)",color:"white",fontSize:14,fontWeight:700,cursor:"pointer"}}>🚀 Démarrer !</button>
-                )}
+                <button onClick={function(){if(canNext[obStep])setObStep(function(s){return s+1;});}} style={{flex:2,padding:"12px",borderRadius:12,border:"none",background:canNext[obStep]?"linear-gradient(135deg,#1E40AF,#6D28D9)":"#E5E7EB",color:canNext[obStep]?"white":"#9CA3AF",fontSize:14,fontWeight:700,cursor:canNext[obStep]?"pointer":"default",transition:"all 0.2s"}}>Continuer →</button>
               </div>
+              )}
             </div>
           </div>
         );
@@ -5008,7 +5011,7 @@ export default function App() {
             </div>
           );
         })()}
-        <div className="pop" key={tab} ref={mainScrollRef} onScroll={function(e){scrollPositions.current[tab]=e.target.scrollTop;}} style={{flex:1,overflowY:"auto",overflowX:"hidden",position:"relative",background:"#FFFFFF"}}>
+        <div className="pop" key={tab} ref={mainScrollRef} onScroll={function(e){scrollPositions.current[tab]=e.target.scrollTop;}} style={{flex:1,overflowY:tab==="coach"?"hidden":"auto",overflowX:"hidden",position:"relative",background:"#FFFFFF"}}>
           {renderSection()}
           {(function(){
             var content=renderRight();
