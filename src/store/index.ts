@@ -52,6 +52,7 @@ interface FlowiState {
   setUserTdah: (val: string) => void;
   setUserDefis: (val: string[]) => void;
   setUserObjectif: (val: string) => void;
+  seedStarterContent: () => void;
 
   // Todos
   todos: Todo[];
@@ -172,6 +173,59 @@ export const useFlowiStore = create<FlowiState>()(
       setUserTdah: (val) => set({ userTdah: val }),
       setUserDefis: (val) => set({ userDefis: val }),
       setUserObjectif: (val) => set({ userObjectif: val }),
+      seedStarterContent: () => {
+        const s = get();
+        const today = getToday();
+        const defis = s.userDefis;
+        const objectif = s.userObjectif;
+
+        // Always: 3 micro-actions for instant dopamine wins
+        const seedTexts: { text: string; priority: Todo['priority'] }[] = [
+          { text: '💧 Boire un verre d\'eau', priority: 'basse' },
+          { text: '🌬️ Respirer profondément 1 minute', priority: 'basse' },
+          { text: '✨ Touche cette tâche pour la cocher — voilà, ta première victoire', priority: 'normale' },
+        ];
+
+        // Personalisation par défis/objectif
+        if (defis.includes('stress') || objectif === 'stress') {
+          seedTexts.push({ text: '🌿 Faire une pause de 2 minutes', priority: 'normale' });
+        }
+        if (defis.includes('focus') || objectif === 'focus') {
+          seedTexts.push({ text: '⏱ Essayer un Focus de 5 minutes (onglet Focus)', priority: 'normale' });
+        }
+        if (defis.includes('memoire')) {
+          seedTexts.push({ text: '📋 Noter 1 chose à ne pas oublier (Tâches → Notes)', priority: 'normale' });
+        }
+
+        const seedTodos = seedTexts.map((t) => ({
+          id: generateId(),
+          text: t.text,
+          done: false,
+          priority: t.priority,
+          due: null,
+          scheduledDate: today,
+          doneDate: null,
+          createdAt: today,
+        }));
+
+        const welcomeNote = {
+          id: generateId(),
+          text: '📝 Bienvenue ! Ici tu peux déposer tout ce qui te passe par la tête, sans ordre, sans pression. Glisse cette note vers la gauche pour la supprimer.',
+          date: today,
+        };
+
+        const welcomeGoal = {
+          id: generateId(),
+          text: 'Cette semaine, ouvrir Flowi 3 fois 🌿',
+          done: false,
+        };
+
+        set({
+          todos: seedTodos,
+          notes: [welcomeNote],
+          weekGoals: [welcomeGoal],
+        });
+      },
 
       // Todos
       todos: [],

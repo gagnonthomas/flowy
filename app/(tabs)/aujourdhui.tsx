@@ -71,7 +71,7 @@ export default function AujourdhuiScreen() {
 
   // Scan modal
   const [scanVisible, setScanVisible] = useState(false);
-  const [scanTarget, setScanTarget] = useState('agenda');
+  const [scanTarget, setScanTarget] = useState<'agenda' | 'semaine' | 'todos' | 'notes' | 'auto'>('agenda');
 
   // Active routine timer
   const [activeRoutine, setActiveRoutine] = useState<Routine | null>(null);

@@ -6,12 +6,13 @@ import {
   StyleSheet,
   useWindowDimensions,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import Svg, { G, Path } from 'react-native-svg';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '@/constants/colors';
 import { useFlowiStore } from '@/store';
 import { useTheme } from '@/hooks/useTheme';
-import { FloatingCoach } from '@/components/ui/FloatingCoach';
+import { FloatingScan } from '@/components/ui/FloatingScan';
 import { trackScreen } from '@/utils/analytics';
 import * as Haptics from 'expo-haptics';
 
@@ -169,13 +170,28 @@ export default function TabLayout() {
               {darkMode ? 'Clair' : 'Sombre'}
             </Text>
           </Pressable>
+
+          {__DEV__ && (
+            <Pressable
+              onPress={async () => {
+                Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+                await AsyncStorage.removeItem('flowi-storage');
+                useFlowiStore.setState({ onboarded: false, userName: '', userDefis: [], userObjectif: '' });
+                router.replace('/onboarding');
+              }}
+              style={[s.utilBtn, { paddingVertical: isPhone ? 6 : 8, backgroundColor: '#FEE2E2' }]}
+            >
+              <Text style={{ fontSize: isPhone ? 16 : 20 }}>♻️</Text>
+              <Text style={[s.utilLabel, { fontSize: isPhone ? 8 : 10, color: '#DC2626' }]}>Reset</Text>
+            </Pressable>
+          )}
         </View>
       </View>
 
       {/* Content area */}
       <View style={[s.content, { backgroundColor: t.screenBg }]}>
         <Slot />
-        {activeTab !== 'flowi' && <FloatingCoach />}
+        <FloatingScan />
       </View>
     </View>
   );

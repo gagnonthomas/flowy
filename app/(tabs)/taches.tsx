@@ -70,7 +70,7 @@ export default function TachesScreen() {
   const TABS = ['todos', 'notes'] as const;
   const tabSwipe = useSubTabSwipe(TABS, subTab, setSubTab);
   const [scanVisible, setScanVisible] = useState(false);
-  const [scanTarget, setScanTarget] = useState('todos');
+  const [scanTarget, setScanTarget] = useState<'todos' | 'notes' | 'agenda' | 'semaine' | 'auto'>('todos');
   const [dumpText, setDumpText] = useState('');
   const [dumpLoading, setDumpLoading] = useState(false);
   const [dumpResult, setDumpResult] = useState<any>(null);

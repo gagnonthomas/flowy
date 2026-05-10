@@ -82,6 +82,7 @@ export default function OnboardingScreen() {
   const setUserName = useFlowiStore((s) => s.setUserName);
   const setUserDefis = useFlowiStore((s) => s.setUserDefis);
   const setUserObjectif = useFlowiStore((s) => s.setUserObjectif);
+  const seedStarterContent = useFlowiStore((s) => s.seedStarterContent);
 
   const [step, setStep] = useState(0);
   const [name, setName] = useState('');
@@ -113,6 +114,7 @@ export default function OnboardingScreen() {
       setUserName(name);
       setUserDefis(defis);
       setUserObjectif(objectif);
+      seedStarterContent();
       setOnboarded(true);
       trackAction('onboarding_complete');
       router.replace('/(tabs)/accueil');
@@ -308,7 +310,7 @@ export default function OnboardingScreen() {
             </Text>
           </TouchableOpacity>
           {step >= 6 && (
-            <TouchableOpacity onPress={() => { setUserName(name); setUserDefis(defis); setUserObjectif(objectif); setOnboarded(true); trackAction('onboarding_skip_tutorial'); router.replace('/(tabs)/accueil'); }}>
+            <TouchableOpacity onPress={() => { setUserName(name); setUserDefis(defis); setUserObjectif(objectif); seedStarterContent(); setOnboarded(true); trackAction('onboarding_skip_tutorial'); router.replace('/(tabs)/accueil'); }}>
               <Text style={styles.skipText}>Passer le tutoriel</Text>
             </TouchableOpacity>
           )}

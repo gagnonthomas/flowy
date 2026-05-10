@@ -4,11 +4,28 @@ import { LinearGradient } from 'expo-linear-gradient';
 import * as ImagePicker from 'expo-image-picker';
 import * as Haptics from 'expo-haptics';
 import { showToast } from './Toast';
+import { useFlowiStore } from '@/store';
+import { getToday } from '@/utils/date';
 
 const API_URL = `${process.env.EXPO_PUBLIC_FLOWI_API_URL || ''}/v1/messages`;
 const API_KEY = process.env.EXPO_PUBLIC_FLOWI_KEY || '';
 
-const PROMPTS: Record<string, string> = {
+type ScanTarget = 'auto' | 'todos' | 'notes' | 'agenda' | 'semaine';
+
+function autoPrompt(today: string): string {
+  return `Photo manuscrite de planification (peut contenir des tâches, des rendez-vous datés, ou les deux). Aujourd'hui = ${today}. Pour CHAQUE item lisible, classifie-le :
+- "task" : action à faire, sans date ni heure spécifique (ex. "acheter du pain")
+- "event" : a une date OU une heure (ex. "12/5 14h dentiste", "Lundi RDV maman", "9h réunion")
+
+Pour chaque event, renvoie aussi :
+- "date" au format YYYY-MM-DD si déductible (utilise ${today} comme référence pour interpréter "demain", "lundi prochain", "12/5", etc.) — sinon null
+- "time" au format HH:MM (24h) si visible — sinon null
+
+Réponds UNIQUEMENT en JSON valide, sans markdown :
+{"items":[{"type":"task","text":"acheter du pain"},{"type":"event","text":"RDV dentiste","date":"2026-05-12","time":"14:00"},{"type":"event","text":"dîner chez maman","date":null,"time":"19:00"}]}`;
+}
+
+const PROMPTS: Record<Exclude<ScanTarget, 'auto'>, string> = {
   todos: "Photo of a handwritten task list. Extract each task. Reply ONLY with JSON array: [{\"text\":\"task\"}]. Nothing else.",
   notes: "Photo of handwritten notes. Transcribe faithfully. Reply ONLY with JSON array: [{\"text\":\"paragraph\"}]. Nothing else.",
   agenda: "Photo d'un agenda papier. Extrais chaque événement ou tâche visible avec l'heure si indiquée. Réponds UNIQUEMENT avec un tableau JSON: [{\"text\":\"09h00 - Réunion équipe\"},{\"text\":\"Appeler médecin\"}]. Rien d'autre.",
@@ -19,20 +36,28 @@ interface ScanResult {
   id: string;
   text: string;
   selected: boolean;
+  // Auto mode only:
+  type?: 'task' | 'event';
+  date?: string | null;
+  time?: string | null;
 }
 
 interface Props {
   visible: boolean;
-  target: string; // 'todos' | 'notes' | 'agenda' | 'semaine'
+  target: ScanTarget;
   onClose: () => void;
-  onImport: (items: string[]) => void;
+  onImport?: (items: string[]) => void; // ignored in 'auto' mode (modal routes itself)
+  onAutoComplete?: (counts: { tasks: number; events: number }) => void; // 'auto' only
 }
 
-export function ScanModal({ visible, target, onClose, onImport }: Props) {
+export function ScanModal({ visible, target, onClose, onImport, onAutoComplete }: Props) {
   const [image, setImage] = useState<string | null>(null);
   const [phase, setPhase] = useState<'pick' | 'preview' | 'loading' | 'confirm'>('pick');
   const [results, setResults] = useState<ScanResult[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const addTodo = useFlowiStore((s) => s.addTodo);
+  const addEvent = useFlowiStore((s) => s.addEvent);
+  const isAuto = target === 'auto';
 
   const reset = () => {
     setImage(null);
@@ -67,6 +92,7 @@ export function ScanModal({ visible, target, onClose, onImport }: Props) {
     setError(null);
 
     try {
+      const promptText = isAuto ? autoPrompt(getToday()) : (PROMPTS[target as Exclude<ScanTarget, 'auto'>] || PROMPTS.todos);
       const res = await fetch(API_URL, {
         method: 'POST',
         headers: {
@@ -75,12 +101,12 @@ export function ScanModal({ visible, target, onClose, onImport }: Props) {
         },
         body: JSON.stringify({
           model: 'claude-sonnet-4-6',
-          max_tokens: 800,
+          max_tokens: 1200,
           messages: [{
             role: 'user',
             content: [
               { type: 'image', source: { type: 'base64', media_type: mimeType, data: base64 } },
-              { type: 'text', text: PROMPTS[target] || PROMPTS.todos },
+              { type: 'text', text: promptText },
             ],
           }],
         }),
@@ -91,6 +117,30 @@ export function ScanModal({ visible, target, onClose, onImport }: Props) {
       const clean = txt.replace(/```json|```/g, '').trim();
       const parsed = JSON.parse(clean);
 
+      // Auto mode: parse {items: [{type, text, date?, time?}]}
+      if (isAuto) {
+        const items = Array.isArray(parsed?.items) ? parsed.items : [];
+        if (items.length === 0) {
+          setError('Aucun contenu détecté. Essaie avec une photo plus nette.');
+          setPhase('preview');
+          return;
+        }
+        setResults(items
+          .map((item: any) => ({
+            id: String(Math.random()),
+            text: (item.text || '').trim(),
+            selected: true,
+            type: item.type === 'event' ? 'event' as const : 'task' as const,
+            date: item.date || null,
+            time: item.time || null,
+          }))
+          .filter((x: ScanResult) => x.text)
+        );
+        setPhase('confirm');
+        return;
+      }
+
+      // Legacy modes: parse [{text}]
       if (!Array.isArray(parsed) || parsed.length === 0) {
         setError('Aucun contenu détecté. Essaie avec une photo plus nette.');
         setPhase('preview');
@@ -113,9 +163,38 @@ export function ScanModal({ visible, target, onClose, onImport }: Props) {
   };
 
   const confirmImport = () => {
-    const selected = results.filter((r) => r.selected).map((r) => r.text);
-    onImport(selected);
-    showToast(`${selected.length} élément${selected.length > 1 ? 's' : ''} importé${selected.length > 1 ? 's' : ''} !`, 'success');
+    const selected = results.filter((r) => r.selected);
+
+    if (isAuto) {
+      // Smart route: tasks → addTodo, events → addEvent
+      let tasks = 0;
+      let events = 0;
+      selected.forEach((item) => {
+        if (item.type === 'event') {
+          addEvent({
+            title: item.text,
+            date: item.date || getToday(),
+            time: item.time || null,
+            endTime: null,
+            category: 'rdv',
+          });
+          events++;
+        } else {
+          addTodo(item.text, 'normale', '', getToday());
+          tasks++;
+        }
+      });
+
+      const parts: string[] = [];
+      if (tasks > 0) parts.push(`${tasks} tâche${tasks > 1 ? 's' : ''}`);
+      if (events > 0) parts.push(`${events} RDV`);
+      showToast(`${parts.join(' + ')} importé${tasks + events > 1 ? 's' : ''} 🎉`, 'success');
+      onAutoComplete?.({ tasks, events });
+    } else {
+      onImport?.(selected.map((r) => r.text));
+      showToast(`${selected.length} élément${selected.length > 1 ? 's' : ''} importé${selected.length > 1 ? 's' : ''} !`, 'success');
+    }
+
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     reset();
     onClose();
@@ -175,15 +254,36 @@ export function ScanModal({ visible, target, onClose, onImport }: Props) {
             {phase === 'confirm' && (
               <View style={s.confirmSection}>
                 <Text style={s.confirmTitle}>{results.length} élément{results.length > 1 ? 's' : ''} détecté{results.length > 1 ? 's' : ''}</Text>
-                <Text style={s.confirmSub}>Décoche ce que tu ne veux pas importer</Text>
-                {results.map((r) => (
-                  <Pressable key={r.id} onPress={() => toggleItem(r.id)} style={[s.resultRow, !r.selected && { opacity: 0.4 }]}>
-                    <View style={[s.resultCheck, r.selected && s.resultCheckOn]}>
-                      {r.selected && <Text style={s.resultCheckMark}>✓</Text>}
-                    </View>
-                    <Text style={s.resultText}>{r.text}</Text>
-                  </Pressable>
-                ))}
+                <Text style={s.confirmSub}>
+                  {isAuto
+                    ? 'Flowi a classé chaque item. Décoche ce que tu ne veux pas garder.'
+                    : 'Décoche ce que tu ne veux pas importer'}
+                </Text>
+                {results.map((r) => {
+                  const isEvent = r.type === 'event';
+                  return (
+                    <Pressable key={r.id} onPress={() => toggleItem(r.id)} style={[s.resultRow, !r.selected && { opacity: 0.4 }]}>
+                      <View style={[s.resultCheck, r.selected && s.resultCheckOn]}>
+                        {r.selected && <Text style={s.resultCheckMark}>✓</Text>}
+                      </View>
+                      {isAuto && (
+                        <View style={[s.typeBadge, { backgroundColor: isEvent ? '#DBEAFE' : '#E0E7FF' }]}>
+                          <Text style={[s.typeBadgeText, { color: isEvent ? '#1D4ED8' : '#4F46E5' }]}>
+                            {isEvent ? '📅 RDV' : '📋 Tâche'}
+                          </Text>
+                        </View>
+                      )}
+                      <View style={{ flex: 1 }}>
+                        <Text style={s.resultText}>{r.text}</Text>
+                        {isAuto && isEvent && (r.date || r.time) && (
+                          <Text style={s.resultMeta}>
+                            {r.date || 'date ?'}{r.time ? ` · ${r.time}` : ''}
+                          </Text>
+                        )}
+                      </View>
+                    </Pressable>
+                  );
+                })}
                 <View style={s.confirmBtns}>
                   <Pressable onPress={confirmImport} style={s.importBtn}>
                     <Text style={s.importBtnText}>Importer ({results.filter((r) => r.selected).length})</Text>
@@ -235,7 +335,10 @@ const s = StyleSheet.create({
   resultCheck: { width: 20, height: 20, borderRadius: 6, borderWidth: 2, borderColor: '#D1D5DB', alignItems: 'center', justifyContent: 'center' },
   resultCheckOn: { backgroundColor: '#3B82F6', borderColor: '#3B82F6' },
   resultCheckMark: { color: '#FFFFFF', fontSize: 11, fontWeight: '800' },
-  resultText: { fontFamily: 'Inter_400Regular', fontSize: 13, color: '#374151', flex: 1, lineHeight: 18 },
+  resultText: { fontFamily: 'Inter_400Regular', fontSize: 13, color: '#374151', lineHeight: 18 },
+  resultMeta: { fontFamily: 'Inter_400Regular', fontSize: 11, color: '#6B7280', marginTop: 2 },
+  typeBadge: { paddingHorizontal: 6, paddingVertical: 3, borderRadius: 6, flexShrink: 0 },
+  typeBadgeText: { fontFamily: 'Inter_700Bold', fontSize: 9, letterSpacing: 0.3 },
   confirmBtns: { flexDirection: 'row', gap: 8, marginTop: 8 },
   importBtn: { flex: 1, paddingVertical: 12, borderRadius: 12, backgroundColor: '#3B82F6', alignItems: 'center' },
   importBtnText: { fontFamily: 'Inter_700Bold', fontSize: 14, color: '#FFFFFF' },
