@@ -14,6 +14,7 @@ import { getToday, getTomorrow } from '@/utils/date';
 import { organizeBrainDump } from '@/utils/api';
 import { useTheme } from '@/hooks/useTheme';
 import { ScanModal } from '@/components/ui/ScanModal';
+import { paper } from '@/constants/paper';
 import { formatDateInput, validateDate } from '@/utils/validate';
 import { useSubTabSwipe } from '@/hooks/useSubTabSwipe';
 import { GestureDetector } from 'react-native-gesture-handler';
@@ -126,13 +127,13 @@ export default function TachesScreen() {
   const sortedNotes = notes.slice().reverse();
 
   return (
-    <View style={{ flex: 1, backgroundColor: t.screenBg }}>
-      {/* Sub-tabs */}
-      <View style={s.tabBar}>
-        {(['todos', 'notes'] as const).map((t) => (
-          <Pressable key={t} onPress={() => setSubTab(t)} style={[s.tab, d.tab, subTab === t && s.tabActive]}>
-            <Text style={[s.tabText, subTab === t && s.tabTextActive]}>
-              {t === 'todos' ? 'Tâches' : 'Notes'}
+    <View style={{ flex: 1, backgroundColor: colors.paper.bg }}>
+      {/* Sub-tabs (paper) */}
+      <View style={paper.subTabBar}>
+        {(['todos', 'notes'] as const).map((tab) => (
+          <Pressable key={tab} onPress={() => setSubTab(tab)} style={paper.subTab}>
+            <Text style={[paper.subTabText, subTab === tab && paper.subTabTextActive]}>
+              {tab === 'todos' ? 'Tâches' : 'Notes'}
             </Text>
           </Pressable>
         ))}
@@ -441,20 +442,20 @@ export default function TachesScreen() {
         /* ═══ NOTES ═══ */
         <AnimatedSubTab key="notes">
         <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
-          {/* Header */}
-          <LinearGradient colors={['#1E1B4B', '#312E81']} style={s.notesHeader}>
-            <Text style={s.notesHeaderTitle}>📝 Notes</Text>
-            <Text style={s.notesHeaderSub}>{'Capture tout — idée, pensée, vide-tête.\nSans filtre, sans ordre.'}</Text>
-          </LinearGradient>
+          {/* Header (paper) */}
+          <View style={s.notesHeader}>
+            <Text style={s.notesHeaderTitle}>Notes</Text>
+            <Text style={s.notesHeaderSub}>Capture tout — idée, pensée, vide-tête. Sans filtre, sans ordre.</Text>
+          </View>
 
-          {/* Input area */}
-          <LinearGradient colors={['#312E81', '#1E1B4B', '#0F0E1A']} locations={[0, 0.4, 1]} style={s.notesInputWrap}>
+          {/* Input area (paper) */}
+          <View style={s.notesInputWrap}>
             <TextInput
               style={s.notesInput}
               value={newNoteText}
               onChangeText={setNewNoteText}
-              placeholder={'Écris et laisse aller...\n\n- Une idée, une émotion, n\'importe quoi'}
-              placeholderTextColor="rgba(255,255,255,0.25)"
+              placeholder={'Écris et laisse aller...\nUne idée, une émotion, n\'importe quoi.'}
+              placeholderTextColor={colors.paper.inkMuted}
               multiline
               numberOfLines={4}
               returnKeyType="default"
@@ -476,13 +477,13 @@ export default function TachesScreen() {
                 <Text style={s.notesSaveBtnText}>Sauvegarder</Text>
               </Pressable>
             )}
-          </LinearGradient>
+          </View>
 
           {/* Notes list */}
           <FlatList
             data={sortedNotes}
             keyExtractor={(item) => item.id}
-            style={{ flex: 1, backgroundColor: '#0F0E1A' }}
+            style={{ flex: 1, backgroundColor: colors.paper.bg }}
             contentContainerStyle={{ padding: 12, paddingBottom: 40, gap: 10 }}
             ListEmptyComponent={
               <View style={{ alignItems: 'center', padding: 32 }}>
@@ -523,46 +524,47 @@ const s = StyleSheet.create({
 
   scroll: { paddingHorizontal: 14, paddingBottom: 40 },
 
-  // Date nav
+  // Date nav — paper
   dateNav: {
-    flexDirection: 'row', alignItems: 'center', gap: 8,
-    marginBottom: 10, paddingVertical: 8, paddingHorizontal: 12,
-    borderRadius: 12, backgroundColor: '#FEFCF8',
-    borderWidth: 1.5, borderColor: '#EAE0D0',
+    flexDirection: 'row', alignItems: 'center', gap: 10,
+    marginBottom: 12, paddingVertical: 10, paddingHorizontal: 14,
+    borderRadius: 4, backgroundColor: colors.paper.bgLight,
+    borderWidth: 1, borderColor: colors.paper.rule,
   },
   dateBtn: {
-    width: 28, height: 28, borderRadius: 8, borderWidth: 1.5,
-    borderColor: '#EAE0D0', backgroundColor: '#FFFFFF',
+    width: 28, height: 28, borderRadius: 3, borderWidth: 1,
+    borderColor: colors.paper.rule, backgroundColor: colors.paper.bg,
     alignItems: 'center', justifyContent: 'center', flexShrink: 0,
   },
-  dateBtnText: { fontSize: 14, color: tm.accent, fontWeight: '700' },
+  dateBtnText: { fontSize: 14, color: colors.paper.accent, fontFamily: 'Inter_700Bold' },
   dateLabel: {
-    fontFamily: 'PlayfairDisplay_700Bold', fontSize: 14,
-    color: '#3D4A6A', lineHeight: 18, textTransform: 'capitalize',
+    fontFamily: 'PlayfairDisplay_700Bold', fontSize: 15,
+    color: colors.paper.ink, lineHeight: 18, textTransform: 'capitalize',
+    letterSpacing: -0.1,
   },
-  dateCount: { fontFamily: 'Inter_400Regular', fontSize: 9, color: '#B0A090', marginTop: 2 },
+  dateCount: { fontFamily: 'Inter_400Regular', fontSize: 10, color: colors.paper.inkMuted, marginTop: 2 },
   todayBtn: {
-    paddingVertical: 4, paddingHorizontal: 10, borderRadius: 8,
-    borderWidth: 1.5, borderColor: tm.border, backgroundColor: tm.light, flexShrink: 0,
+    paddingVertical: 5, paddingHorizontal: 12, borderRadius: 3,
+    borderWidth: 1, borderColor: colors.paper.rule, backgroundColor: colors.paper.accentSoft, flexShrink: 0,
   },
-  todayBtnText: { fontFamily: 'Inter_700Bold', fontSize: 10, color: tm.accent },
+  todayBtnText: { fontFamily: 'Inter_700Bold', fontSize: 11, color: colors.paper.accent },
 
-  // Add card
+  // Add card — paper
   addCard: {
-    backgroundColor: '#FEFCF8', borderWidth: 1.5, borderColor: '#EAE0D0',
-    borderRadius: 12, padding: 10, paddingHorizontal: 12, marginBottom: 10,
+    backgroundColor: colors.paper.bgLight, borderWidth: 1, borderColor: colors.paper.rule,
+    borderRadius: 4, padding: 12, paddingHorizontal: 14, marginBottom: 12,
   },
-  addRow: { flexDirection: 'row', gap: 6, marginBottom: 6 },
+  addRow: { flexDirection: 'row', gap: 8, marginBottom: 8 },
   addInput: {
-    flex: 1, borderWidth: 1.5, borderColor: '#EAE0D0', borderRadius: 9,
-    paddingVertical: 7, paddingHorizontal: 10, fontSize: 13,
-    fontFamily: 'Inter_400Regular', backgroundColor: '#FFFFFF', color: colors.text,
+    flex: 1, borderWidth: 1, borderColor: colors.paper.rule, borderRadius: 3,
+    paddingVertical: 9, paddingHorizontal: 12, fontSize: 14,
+    fontFamily: 'Inter_400Regular', backgroundColor: colors.paper.bg, color: colors.paper.ink,
   },
   addBtn: {
-    paddingVertical: 7, paddingHorizontal: 14, borderRadius: 9,
-    backgroundColor: tm.accent, alignItems: 'center', justifyContent: 'center',
+    paddingVertical: 9, paddingHorizontal: 16, borderRadius: 3,
+    backgroundColor: colors.paper.accent, alignItems: 'center', justifyContent: 'center',
   },
-  addBtnText: { color: '#FFFFFF', fontSize: 13, fontWeight: '700' },
+  addBtnText: { color: colors.paper.bgLight, fontSize: 14, fontFamily: 'Inter_700Bold' },
   prioSection: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   prioLabel: { fontFamily: 'Inter_700Bold', fontSize: 10, color: '#B0A090', flexShrink: 0 },
   prioRow: { flexDirection: 'row', gap: 5, flex: 1 },
@@ -586,14 +588,14 @@ const s = StyleSheet.create({
     fontFamily: 'Inter_400Regular', backgroundColor: '#FFFFFF', color: colors.text,
   },
 
-  // Import
+  // Import — paper ghost button with dashed border
   importBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 7, marginBottom: 10, paddingVertical: 7, paddingHorizontal: 12,
-    borderRadius: 10, borderWidth: 1.5, borderStyle: 'dashed',
-    borderColor: '#BFDBFE', backgroundColor: '#EFF6FF',
+    gap: 7, marginBottom: 10, paddingVertical: 9, paddingHorizontal: 12,
+    borderRadius: 4, borderWidth: 1, borderStyle: 'dashed',
+    borderColor: colors.paper.rule, backgroundColor: colors.paper.bgLight,
   },
-  importText: { fontFamily: 'Inter_600SemiBold', fontSize: 11, color: '#1E40AF' },
+  importText: { fontFamily: 'Inter_600SemiBold', fontSize: 12, color: colors.paper.accent },
 
   // Progression
   progressCard: {
@@ -711,51 +713,118 @@ const s = StyleSheet.create({
     lineHeight: 18, textAlign: 'center',
   },
 
-  // ── Notes ──
-  notesHeader: { paddingVertical: 16, paddingHorizontal: 16 },
+  // ── Notes — paper aesthetic ──
+  notesHeader: {
+    paddingVertical: 18,
+    paddingHorizontal: 18,
+    backgroundColor: colors.paper.bg,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.paper.rule,
+  },
   notesHeaderTitle: {
-    fontFamily: 'PlayfairDisplay_700Bold', fontSize: 18, color: '#FFFFFF', marginBottom: 4,
+    fontFamily: 'PlayfairDisplay_700Bold',
+    fontSize: 24,
+    color: colors.paper.ink,
+    letterSpacing: -0.3,
+    marginBottom: 4,
   },
   notesHeaderSub: {
-    fontFamily: 'Inter_400Regular', fontSize: 11, color: 'rgba(255,255,255,0.55)', lineHeight: 17,
+    fontFamily: 'PlayfairDisplay_700Bold',
+    fontSize: 12,
+    fontStyle: 'italic',
+    color: colors.paper.inkMuted,
+    lineHeight: 18,
   },
-  notesInputWrap: { paddingVertical: 12, paddingHorizontal: 14 },
+  notesInputWrap: {
+    paddingVertical: 14,
+    paddingHorizontal: 14,
+    backgroundColor: colors.paper.bg,
+  },
   notesInput: {
-    borderWidth: 1.5, borderColor: 'rgba(167,139,250,0.3)', borderRadius: 12,
-    padding: 12, paddingHorizontal: 14, fontSize: 13, fontFamily: 'Inter_400Regular',
-    backgroundColor: 'rgba(255,255,255,0.05)', color: '#FFFFFF', lineHeight: 22,
-    minHeight: 80, textAlignVertical: 'top', marginBottom: 8,
+    borderWidth: 1,
+    borderColor: colors.paper.rule,
+    borderRadius: 4,
+    padding: 14,
+    paddingHorizontal: 14,
+    fontSize: 14,
+    fontFamily: 'Inter_400Regular',
+    backgroundColor: colors.paper.bgLight,
+    color: colors.paper.ink,
+    lineHeight: 22,
+    minHeight: 88,
+    textAlignVertical: 'top',
+    marginBottom: 10,
   },
   notesActions: {
-    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
   },
   notesAutoSave: {
-    fontFamily: 'Inter_400Regular', fontSize: 9, color: 'rgba(255,255,255,0.2)',
+    fontFamily: 'Inter_400Regular',
+    fontSize: 10,
+    color: colors.paper.inkMuted,
+    letterSpacing: 0.3,
   },
   notesScanBtn: {
-    paddingVertical: 6, paddingHorizontal: 12, borderRadius: 10,
-    borderWidth: 1.5, borderColor: 'rgba(167,139,250,0.3)',
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: colors.paper.rule,
+    backgroundColor: colors.paper.bgLight,
   },
   notesSaveBtn: {
-    alignSelf: 'flex-end', paddingVertical: 6, paddingHorizontal: 16,
-    borderRadius: 10, backgroundColor: '#6D28D9',
+    alignSelf: 'flex-end',
+    paddingVertical: 8,
+    paddingHorizontal: 18,
+    borderRadius: 4,
+    backgroundColor: colors.paper.accent,
   },
-  notesSaveBtnText: { fontFamily: 'Inter_700Bold', fontSize: 12, color: '#FFFFFF' },
+  notesSaveBtnText: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 12,
+    color: colors.paper.bgLight,
+    letterSpacing: 0.3,
+  },
   notesEmptyText: {
-    fontFamily: 'PlayfairDisplay_700Bold', fontSize: 13,
-    color: 'rgba(255,255,255,0.25)', fontStyle: 'italic', lineHeight: 22, textAlign: 'center',
+    fontFamily: 'PlayfairDisplay_700Bold',
+    fontSize: 13,
+    color: colors.paper.inkMuted,
+    fontStyle: 'italic',
+    lineHeight: 22,
+    textAlign: 'center',
   },
   noteCard: {
-    borderRadius: 13, backgroundColor: 'rgba(255,255,255,0.05)',
-    borderWidth: 1, borderColor: 'rgba(167,139,250,0.2)', padding: 12, paddingHorizontal: 14,
+    borderRadius: 4,
+    backgroundColor: colors.paper.bgLight,
+    borderWidth: 1,
+    borderColor: colors.paper.rule,
+    padding: 14,
+    paddingHorizontal: 16,
   },
   noteText: {
-    fontFamily: 'Inter_400Regular', fontSize: 12,
-    color: 'rgba(255,255,255,0.85)', lineHeight: 20,
+    fontFamily: 'Inter_400Regular',
+    fontSize: 13,
+    color: colors.paper.ink,
+    lineHeight: 20,
   },
   noteFooter: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 10,
   },
-  noteDate: { fontFamily: 'Inter_400Regular', fontSize: 9, color: 'rgba(167,139,250,0.5)' },
-  noteDeleteBtn: { fontSize: 14, color: 'rgba(255,255,255,0.2)', lineHeight: 16 },
+  noteDate: {
+    fontFamily: 'PlayfairDisplay_700Bold',
+    fontSize: 11,
+    fontStyle: 'italic',
+    color: colors.paper.inkMuted,
+  },
+  noteDeleteBtn: {
+    fontSize: 16,
+    color: colors.paper.inkMuted,
+    lineHeight: 18,
+  },
 });
