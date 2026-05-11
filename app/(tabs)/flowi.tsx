@@ -58,6 +58,7 @@ export default function FlowiScreen() {
   const { dark, t } = useTheme();
   const d = useDarkOverrides();
   const xpRequested = useFlowiStore((s) => s.xpRequested);
+  const coachAutoSendPending = useFlowiStore((s) => s.coachAutoSendPending);
   const [subTab, setSubTab] = useState<SubTab>('coach');
 
   useEffect(() => {
@@ -66,6 +67,7 @@ export default function FlowiScreen() {
       useFlowiStore.setState({ xpRequested: false });
     }
   }, [xpRequested]);
+
   const [mode, setMode] = useState<FlowiMode>('chat');
   const coachMessages = useFlowiStore((s) => s.coachMessages);
   const addCoachMessage = useFlowiStore((s) => s.addCoachMessage);
@@ -95,6 +97,29 @@ export default function FlowiScreen() {
   useEffect(() => {
     scrollRef.current?.scrollToEnd({ animated: true });
   }, [coachMessages]);
+
+  // Post-scan handoff: when ScanModal queues a coach message + sets the flag,
+  // jump to the chat tab and auto-send to the API so the user lands on a
+  // conversation already in motion.
+  useEffect(() => {
+    if (!coachAutoSendPending || loading) return;
+    setSubTab('coach');
+    setMode('chat');
+    useFlowiStore.setState({ coachAutoSendPending: false });
+    (async () => {
+      setLoading(true);
+      try {
+        const history = coachMessages.map((m) => ({ role: m.role as 'user' | 'assistant', content: m.text }));
+        const reply = await sendCoachMessage(history);
+        addCoachMessage({ role: 'assistant', text: reply });
+      } finally {
+        setLoading(false);
+      }
+    })();
+    // We intentionally only react to coachAutoSendPending — pulling coachMessages
+    // into the deps would re-fire on every coach message.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [coachAutoSendPending]);
 
   const sendMessage = async () => {
     if (!input.trim() || loading) return;

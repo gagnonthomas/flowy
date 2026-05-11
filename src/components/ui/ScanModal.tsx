@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { View, Text, StyleSheet, Pressable, Modal, Image, ScrollView, ActivityIndicator } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import * as Haptics from 'expo-haptics';
 import { showToast } from './Toast';
@@ -51,12 +52,15 @@ interface Props {
 }
 
 export function ScanModal({ visible, target, onClose, onImport, onAutoComplete }: Props) {
+  const router = useRouter();
   const [image, setImage] = useState<string | null>(null);
-  const [phase, setPhase] = useState<'pick' | 'preview' | 'loading' | 'confirm'>('pick');
+  const [phase, setPhase] = useState<'pick' | 'preview' | 'loading' | 'confirm' | 'done'>('pick');
   const [results, setResults] = useState<ScanResult[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [importedItems, setImportedItems] = useState<ScanResult[]>([]);
   const addTodo = useFlowiStore((s) => s.addTodo);
   const addEvent = useFlowiStore((s) => s.addEvent);
+  const addCoachMessage = useFlowiStore((s) => s.addCoachMessage);
   const isAuto = target === 'auto';
 
   const reset = () => {
@@ -64,6 +68,7 @@ export function ScanModal({ visible, target, onClose, onImport, onAutoComplete }
     setPhase('pick');
     setResults([]);
     setError(null);
+    setImportedItems([]);
   };
 
   const pickImage = async (useCamera: boolean) => {
@@ -185,19 +190,45 @@ export function ScanModal({ visible, target, onClose, onImport, onAutoComplete }
         }
       });
 
-      const parts: string[] = [];
-      if (tasks > 0) parts.push(`${tasks} tâche${tasks > 1 ? 's' : ''}`);
-      if (events > 0) parts.push(`${events} RDV`);
-      showToast(`${parts.join(' + ')} importé${tasks + events > 1 ? 's' : ''} 🎉`, 'success');
       onAutoComplete?.({ tasks, events });
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      // Stay open on the 'done' phase so the user can opt into the coach handoff.
+      setImportedItems(selected);
+      setPhase('done');
     } else {
       onImport?.(selected.map((r) => r.text));
       showToast(`${selected.length} élément${selected.length > 1 ? 's' : ''} importé${selected.length > 1 ? 's' : ''} !`, 'success');
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      reset();
+      onClose();
     }
+  };
 
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+  const askCoachToOrganize = () => {
+    const taskItems = importedItems.filter((i) => i.type !== 'event');
+    const eventItems = importedItems.filter((i) => i.type === 'event');
+    const lines: string[] = [
+      `Je viens de scanner une page papier et j'ai importé ${importedItems.length} éléments dans Flowi.`,
+    ];
+    if (taskItems.length > 0) {
+      lines.push('', `📋 Tâches (${taskItems.length}) :`);
+      taskItems.forEach((t) => lines.push(`- ${t.text}`));
+    }
+    if (eventItems.length > 0) {
+      lines.push('', `📅 RDV (${eventItems.length}) :`);
+      eventItems.forEach((e) => {
+        const meta = [e.date, e.time].filter(Boolean).join(' à ');
+        lines.push(`- ${e.text}${meta ? ` (${meta})` : ''}`);
+      });
+    }
+    lines.push('', "Aide-moi à démêler tout ça : qu'est-ce qui presse, qu'est-ce qui peut attendre, est-ce que je peux regrouper des trucs ?");
+
+    addCoachMessage({ role: 'user', text: lines.join('\n') });
+    useFlowiStore.setState({ coachAutoSendPending: true });
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     reset();
     onClose();
+    router.replace('/(tabs)/flowi');
   };
 
   return (
@@ -294,6 +325,38 @@ export function ScanModal({ visible, target, onClose, onImport, onAutoComplete }
                 </View>
               </View>
             )}
+
+            {/* Phase: Done (auto mode only) */}
+            {phase === 'done' && (
+              <View style={s.doneSection}>
+                <Text style={s.doneEmoji}>🎉</Text>
+                <Text style={s.doneTitle}>{importedItems.length} élément{importedItems.length > 1 ? 's' : ''} importé{importedItems.length > 1 ? 's' : ''}</Text>
+                <Text style={s.doneSub}>
+                  {(() => {
+                    const tasks = importedItems.filter((i) => i.type !== 'event').length;
+                    const events = importedItems.filter((i) => i.type === 'event').length;
+                    const parts: string[] = [];
+                    if (tasks > 0) parts.push(`${tasks} tâche${tasks > 1 ? 's' : ''} dans Tâches`);
+                    if (events > 0) parts.push(`${events} RDV dans Aujourd'hui`);
+                    return parts.join(' · ');
+                  })()}
+                </Text>
+
+                <Pressable onPress={askCoachToOrganize} style={s.coachCta}>
+                  <LinearGradient colors={['#16A34A', '#059669']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={s.coachCtaInner}>
+                    <Text style={s.coachCtaIcon}>🌿</Text>
+                    <View style={{ flex: 1 }}>
+                      <Text style={s.coachCtaTitle}>Demander à Flowi de m'aider à organiser</Text>
+                      <Text style={s.coachCtaSub}>Le coach regarde ce que tu viens d'importer et propose comment démêler</Text>
+                    </View>
+                  </LinearGradient>
+                </Pressable>
+
+                <Pressable onPress={() => { reset(); onClose(); }} style={s.doneCloseBtn}>
+                  <Text style={s.doneCloseBtnText}>Fermer · je m'en occupe plus tard</Text>
+                </Pressable>
+              </View>
+            )}
           </ScrollView>
         </View>
       </View>
@@ -344,4 +407,17 @@ const s = StyleSheet.create({
   importBtnText: { fontFamily: 'Inter_700Bold', fontSize: 14, color: '#FFFFFF' },
   cancelBtn: { paddingVertical: 12, paddingHorizontal: 20, borderRadius: 12, borderWidth: 1.5, borderColor: '#E8EDF5' },
   cancelBtnText: { fontFamily: 'Inter_600SemiBold', fontSize: 14, color: '#6B7280' },
+
+  // Done (post-import auto mode)
+  doneSection: { alignItems: 'center', gap: 8, paddingVertical: 8 },
+  doneEmoji: { fontSize: 48 },
+  doneTitle: { fontFamily: 'Inter_700Bold', fontSize: 18, color: '#1F2937', textAlign: 'center' },
+  doneSub: { fontFamily: 'Inter_400Regular', fontSize: 12, color: '#6B7280', textAlign: 'center', marginBottom: 16 },
+  coachCta: { width: '100%', borderRadius: 14, overflow: 'hidden' },
+  coachCtaInner: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16 },
+  coachCtaIcon: { fontSize: 28 },
+  coachCtaTitle: { fontFamily: 'Inter_700Bold', fontSize: 14, color: '#FFFFFF', marginBottom: 2 },
+  coachCtaSub: { fontFamily: 'Inter_400Regular', fontSize: 11, color: 'rgba(255,255,255,0.85)', lineHeight: 15 },
+  doneCloseBtn: { paddingVertical: 10, marginTop: 4 },
+  doneCloseBtnText: { fontFamily: 'Inter_400Regular', fontSize: 12, color: '#9CA3AF' },
 });

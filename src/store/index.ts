@@ -153,6 +153,7 @@ interface FlowiState {
   quickRoutineRequested: boolean;
   notesRequested: boolean;
   xpRequested: boolean;
+  coachAutoSendPending: boolean;
 
   // Selected date
   selectedDate: string;
@@ -179,8 +180,9 @@ export const useFlowiStore = create<FlowiState>()(
         const defis = s.userDefis;
         const objectif = s.userObjectif;
 
-        // Always: 3 micro-actions for instant dopamine wins
+        // Always: 1 hero scan task + 3 micro-actions for instant dopamine wins
         const seedTexts: { text: string; priority: Todo['priority'] }[] = [
+          { text: '📷 Scanne une liste papier — tape le bouton bleu en bas à droite', priority: 'haute' },
           { text: '💧 Boire un verre d\'eau', priority: 'basse' },
           { text: '🌬️ Respirer profondément 1 minute', priority: 'basse' },
           { text: '✨ Touche cette tâche pour la cocher — voilà, ta première victoire', priority: 'normale' },
@@ -480,6 +482,7 @@ export const useFlowiStore = create<FlowiState>()(
       quickRoutineRequested: false,
       notesRequested: false,
       xpRequested: false,
+      coachAutoSendPending: false,
 
       // Selected date
       selectedDate: getToday(),
