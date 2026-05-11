@@ -117,7 +117,7 @@ export default function OnboardingScreen() {
       seedStarterContent();
       setOnboarded(true);
       trackAction('onboarding_complete');
-      router.replace('/(tabs)/accueil');
+      router.replace('/(tabs)/aujourdhui');
     }
   };
 
@@ -310,7 +310,7 @@ export default function OnboardingScreen() {
             </Text>
           </TouchableOpacity>
           {step >= 6 && (
-            <TouchableOpacity onPress={() => { setUserName(name); setUserDefis(defis); setUserObjectif(objectif); seedStarterContent(); setOnboarded(true); trackAction('onboarding_skip_tutorial'); router.replace('/(tabs)/accueil'); }}>
+            <TouchableOpacity onPress={() => { setUserName(name); setUserDefis(defis); setUserObjectif(objectif); seedStarterContent(); setOnboarded(true); trackAction('onboarding_skip_tutorial'); router.replace('/(tabs)/aujourdhui'); }}>
               <Text style={styles.skipText}>Passer le tutoriel</Text>
             </TouchableOpacity>
           )}

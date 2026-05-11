@@ -30,7 +30,7 @@ export default function SplashIndex() {
       if (!onboarded) {
         router.replace('/onboarding');
       } else {
-        router.replace('/(tabs)/accueil');
+        router.replace('/(tabs)/aujourdhui');
       }
     }
   }, [ready]);

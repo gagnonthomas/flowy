@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Slot, usePathname, useRouter } from 'expo-router';
 import {
   View,
@@ -12,28 +13,29 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '@/constants/colors';
 import { useFlowiStore } from '@/store';
 import { useTheme } from '@/hooks/useTheme';
-import { FloatingScan } from '@/components/ui/FloatingScan';
+import { FloatingCoach } from '@/components/ui/FloatingCoach';
+import { ScanModal } from '@/components/ui/ScanModal';
 import { trackScreen } from '@/utils/analytics';
 import * as Haptics from 'expo-haptics';
 
+// 'scan' is a special tab — pressing it opens the scan modal instead of
+// navigating to a route. There is no app/(tabs)/scan.tsx file.
 const TAB_CONFIG = [
-  { name: 'accueil', icon: '🏠', label: 'Accueil' },
   { name: 'aujourdhui', icon: '📅', label: "Aujourd'hui" },
-  { name: 'focus', icon: '⏱', label: 'Focus' },
-  { name: 'planning', icon: '📆', label: 'Planning' },
   { name: 'taches', icon: '✅', label: 'Tâches' },
+  { name: 'planning', icon: '📆', label: 'Planning' },
   { name: 'moi', icon: '💚', label: 'Moi' },
-  { name: 'flowi', icon: '🧠', label: 'Flowi' },
+  { name: 'scan', icon: '📷', label: 'Scan' },
 ] as const;
 
+// Focus, Accueil, and Flowi are no longer in the tab bar — their routes still
+// exist (Focus and Flowi launched contextually; Accueil redirects to Aujourd'hui).
 const SECTION_COLORS: Record<string, { accent: string; light: string }> = {
-  accueil: { accent: colors.accueil.accent, light: colors.accueil.light },
   aujourdhui: { accent: colors.agenda.accent, light: colors.agenda.light },
-  focus: { accent: colors.focus.accent, light: colors.focus.light },
-  planning: { accent: colors.planning.accent, light: colors.planning.light },
   taches: { accent: colors.todos.accent, light: colors.todos.light },
+  scan: { accent: colors.paper.accent, light: colors.paper.accentSoft },
+  planning: { accent: colors.planning.accent, light: colors.planning.light },
   moi: { accent: colors.moi.accent, light: colors.moi.light },
-  flowi: { accent: colors.flowi.accent, light: colors.flowi.light },
 };
 
 function SidebarLotus({ size, dark }: { size: number; dark: boolean }) {
@@ -66,7 +68,8 @@ export default function TabLayout() {
   const toggleDarkMode = useFlowiStore((s) => s.toggleDarkMode);
   const { dark, t } = useTheme();
 
-  const activeTab = pathname.split('/').pop() || 'accueil';
+  const activeTab = pathname.split('/').pop() || 'aujourdhui';
+  const [scanOpen, setScanOpen] = useState(false);
 
   const isPhone = width < 768;
   const isTablet = width >= 768 && width < 1200;
@@ -74,6 +77,11 @@ export default function TabLayout() {
 
   const handlePress = (name: string) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    if (name === 'scan') {
+      // 'scan' is an action tab, not a route — open the modal in place.
+      setScanOpen(true);
+      return;
+    }
     trackScreen(name);
     router.replace(`/(tabs)/${name}` as any);
   };
@@ -94,7 +102,7 @@ export default function TabLayout() {
         ]}
       >
         {/* Logo */}
-        <Pressable onPress={() => handlePress('accueil')} style={[s.logoSection, { borderBottomColor: dark ? '#1e1e36' : '#F0F0F8' }]}>
+        <Pressable onPress={() => handlePress('aujourdhui')} style={[s.logoSection, { borderBottomColor: dark ? '#1e1e36' : '#F0F0F8' }]}>
           <SidebarLotus size={isPhone ? 36 : 48} dark={dark} />
           <Text style={[s.logoText, { color: t.wordmark, fontSize: isPhone ? 12 : 15 }]}>Flowi</Text>
         </Pressable>
@@ -191,7 +199,14 @@ export default function TabLayout() {
       {/* Content area */}
       <View style={[s.content, { backgroundColor: t.screenBg }]}>
         <Slot />
-        <FloatingScan />
+        {/* Coach Flowi accessible everywhere as a floating button. */}
+        <FloatingCoach />
+        {/* Scan modal driven by the 'Scan' tab press. */}
+        <ScanModal
+          visible={scanOpen}
+          target="auto"
+          onClose={() => setScanOpen(false)}
+        />
       </View>
     </View>
   );

@@ -21,6 +21,8 @@ import { StaggeredItem } from '@/components/ui/StaggeredItem';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { scheduleEventReminder } from '@/utils/notifications';
 import { ScanModal } from '@/components/ui/ScanModal';
+import { PaperGreetingBanner } from '@/components/ui/PaperGreetingBanner';
+import { paper } from '@/constants/paper';
 import { showToast } from '@/components/ui/Toast';
 import { formatDateInput, formatTimeInput, validateDate, validateTime } from '@/utils/validate';
 import type { Routine } from '@/types';
@@ -237,12 +239,15 @@ export default function AujourdhuiScreen() {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: t.screenBg }}>
-      {/* Sub-tabs */}
-      <View style={styles.subTabBar}>
+    <View style={{ flex: 1, backgroundColor: colors.paper.bg }}>
+      {/* Paper greeting banner — replaces the old Accueil tab */}
+      <PaperGreetingBanner />
+
+      {/* Sub-tabs (paper) */}
+      <View style={paper.subTabBar}>
         {(['agenda', 'routines'] as const).map((t) => (
-          <Pressable key={t} onPress={() => setSubTab(t)} style={[styles.subTab, d.tab, subTab === t && styles.subTabActive]}>
-            <Text style={[styles.subTabText, subTab === t && styles.subTabTextActive]}>
+          <Pressable key={t} onPress={() => setSubTab(t)} style={paper.subTab}>
+            <Text style={[paper.subTabText, subTab === t && paper.subTabTextActive]}>
               {t === 'agenda' ? 'Agenda' : 'Routines'}
             </Text>
           </Pressable>
@@ -254,8 +259,8 @@ export default function AujourdhuiScreen() {
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
       <ScrollView style={[styles.container, { backgroundColor: t.screenBg }]} contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
 
-        {/* ── DATE HEADER ── */}
-        <LinearGradient colors={['#E8F4FD', '#EDE8F5']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.dateHeader}>
+        {/* ── DATE HEADER (paper) ── */}
+        <View style={styles.dateHeader}>
           {/* Left: big date */}
           <View style={styles.dateLeft}>
             <Text style={styles.dayOfWeek}>
@@ -298,7 +303,7 @@ export default function AujourdhuiScreen() {
               })}
             </View>
           </View>
-        </LinearGradient>
+        </View>
 
         {/* ── PENSÉE DU JOUR ── */}
         <Pressable
@@ -861,78 +866,110 @@ export default function AujourdhuiScreen() {
 
 const styles = StyleSheet.create({
   // Sub-tabs
+  // Legacy sub-tab styles kept in case other call sites reference them; main
+  // render now uses `paper.subTabBar` from constants/paper.ts.
   subTabBar: { flexDirection: 'row', gap: 6, paddingHorizontal: 12, paddingTop: 10, paddingBottom: 6 },
   subTab: { paddingVertical: 10, paddingHorizontal: 20, borderRadius: 12, backgroundColor: '#FAFBFF', borderWidth: 1.5, borderColor: '#E8EDF5' },
   subTabActive: { backgroundColor: colors.agenda.light, borderColor: colors.agenda.accent },
   subTabText: { fontFamily: 'Inter_400Regular', fontSize: 14, color: '#9CA3AF' },
   subTabTextActive: { fontFamily: 'Inter_700Bold', color: colors.agenda.accent },
 
-  container: { flex: 1, backgroundColor: '#FFFFFF' },
+  container: { flex: 1, backgroundColor: colors.paper.bg },
   scroll: { padding: 8, paddingHorizontal: 14, paddingBottom: 40, gap: 8 },
 
-  // Date header (compact)
+  // Date header — paper aesthetic
   dateHeader: {
     flexDirection: 'row',
-    borderRadius: 10,
-    borderWidth: 1.5,
-    borderColor: '#BAD8FB',
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: colors.paper.rule,
+    backgroundColor: colors.paper.bgLight,
     overflow: 'hidden',
   },
   dateLeft: {
     width: '50%',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 2,
+    paddingVertical: 6,
     paddingHorizontal: 6,
     borderRightWidth: 1,
-    borderRightColor: '#BAD8FB',
+    borderRightColor: colors.paper.rule,
   },
   dayOfWeek: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 12,
-    color: '#8090B0',
+    fontFamily: 'Inter_400Regular',
+    fontSize: 11,
+    color: colors.paper.inkMuted,
     textTransform: 'uppercase',
-    letterSpacing: 0.8,
+    letterSpacing: 2,
   },
   bigDate: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 52,
-    color: '#3B82F6',
-    lineHeight: 56,
+    fontFamily: 'PlayfairDisplay_700Bold',
+    fontSize: 54,
+    color: colors.paper.ink,
+    lineHeight: 60,
   },
   monthYear: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 12,
-    color: '#6080B0',
-    marginBottom: 3,
+    fontFamily: 'PlayfairDisplay_900Black_Italic',
+    fontSize: 13,
+    fontStyle: 'italic',
+    color: colors.paper.inkSoft,
+    marginBottom: 6,
   },
-  dateNav: { flexDirection: 'row', gap: 3 },
+  dateNav: { flexDirection: 'row', gap: 4 },
   dateNavBtn: {
-    width: 20,
-    height: 20,
-    borderRadius: 5,
+    width: 22,
+    height: 22,
+    borderRadius: 3,
     borderWidth: 1,
-    borderColor: '#BAD8FB',
-    backgroundColor: '#FFFFFF',
+    borderColor: colors.paper.rule,
+    backgroundColor: colors.paper.bg,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  dateNavText: { fontSize: 14, color: '#3B82F6', fontWeight: '700' },
+  dateNavText: {
+    fontSize: 12,
+    color: colors.paper.accent,
+    fontFamily: 'Inter_700Bold',
+  },
 
-  // Mini calendar (compact)
+  // Mini calendar — paper aesthetic
   dateRight: { width: '50%', padding: 2, paddingHorizontal: 5 },
-  calNavRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 1 },
-  calNavArrow: { fontSize: 12, color: '#3B82F6', fontWeight: '700' },
-  calMonthLabel: { fontFamily: 'Inter_700Bold', fontSize: 12, color: '#1E3A8A' },
+  calNavRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 2 },
+  calNavArrow: { fontSize: 12, color: colors.paper.accent, fontFamily: 'Inter_700Bold' },
+  calMonthLabel: {
+    fontFamily: 'PlayfairDisplay_700Bold',
+    fontSize: 12,
+    color: colors.paper.ink,
+    letterSpacing: -0.1,
+  },
   calDayHeaders: { flexDirection: 'row', marginBottom: 1 },
-  calDayHeader: { flex: 1, fontFamily: 'Inter_700Bold', fontSize: 10, color: '#8090B0', textAlign: 'center', lineHeight: 13 },
+  calDayHeader: {
+    flex: 1,
+    fontFamily: 'Inter_400Regular',
+    fontSize: 10,
+    color: colors.paper.inkMuted,
+    textAlign: 'center',
+    lineHeight: 13,
+    letterSpacing: 0.6,
+  },
   calGrid: { flexDirection: 'row', flexWrap: 'wrap' },
-  calCell: { width: `${100 / 7}%`, paddingVertical: 16, alignItems: 'center', justifyContent: 'center', borderRadius: 2 },
-  calCellSel: { backgroundColor: '#3B82F6' },
-  calCellToday: { backgroundColor: '#DBEAFE' },
-  calDayNum: { fontFamily: 'Inter_400Regular', fontSize: 11, color: '#1E3A8A', lineHeight: 14 },
-  calDayNumSel: { color: '#FFFFFF' },
-  calDayNumToday: { color: '#1D4ED8' },
+  calCell: {
+    width: `${100 / 7}%`,
+    paddingVertical: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 3,
+  },
+  calCellSel: { backgroundColor: colors.paper.accent },
+  calCellToday: { backgroundColor: colors.paper.accentSoft },
+  calDayNum: {
+    fontFamily: 'Inter_400Regular',
+    fontSize: 11,
+    color: colors.paper.inkSoft,
+    lineHeight: 14,
+  },
+  calDayNumSel: { color: colors.paper.bgLight, fontFamily: 'Inter_700Bold' },
+  calDayNumToday: { color: colors.paper.accent, fontFamily: 'Inter_700Bold' },
 
   // Priorités du jour
   prioCard: {
