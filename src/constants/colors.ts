@@ -22,6 +22,20 @@ export const colors = {
   muted: '#9CA3AF',
   subtle: '#B0A090',
 
+  // Paper aesthetic — "Garde ton papier" visual language
+  paper: {
+    bg: '#F5F0E6',           // warm cream base
+    bgDeep: '#EFE8D9',       // slightly darker, for cards/sections
+    bgLight: '#FAF7F0',      // near-white cream for highlights
+    ink: '#2C2520',          // warm dark ink (instead of black)
+    inkSoft: '#57463A',      // softer ink for body text
+    inkMuted: '#8B7860',     // muted ink for metadata
+    accent: '#B4593E',       // terracotta — primary action accent
+    accentSoft: '#E8C9BB',   // light terracotta for backgrounds
+    moss: '#5C6B4F',         // moss green — secondary, for "done" / nature
+    rule: '#D4C9B3',         // hand-drawn rule color for dividers
+  },
+
   // Dark mode
   dark: {
     bg: '#0f0f1a',
